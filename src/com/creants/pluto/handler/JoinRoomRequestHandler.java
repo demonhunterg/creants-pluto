@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import com.avengers.netty.core.om.IRoom;
 import com.avengers.netty.core.om.RoomSize;
 import com.avengers.netty.gamelib.key.NetworkConstant;
-import com.avengers.netty.gamelib.result.IPlayMoveResult;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
 import com.creants.pluto.logic.MauBinhGame.STATE;
@@ -21,7 +20,7 @@ public class JoinRoomRequestHandler extends AbstractRequestHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(JoinRoomRequestHandler.class);
 
 	@Override
-	public IPlayMoveResult handleRequest(User user, Message message) {
+	public void handleRequest(User user, Message message) {
 		IRoom lastJoinedRoom = user.getLastJoinedRoom();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(String.format("[DEBUG] Join Room [username: %s, roomId:%d, roomName:%s]", user.getUserName(),
@@ -41,7 +40,6 @@ public class JoinRoomRequestHandler extends AbstractRequestHandler {
 			gameApi.sendAllInRoom(message);
 		}
 
-		return null;
 	}
 
 }

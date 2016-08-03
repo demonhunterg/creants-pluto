@@ -1,6 +1,5 @@
 package com.creants.pluto.handler;
 
-import com.avengers.netty.gamelib.result.IPlayMoveResult;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
 import com.creants.pluto.om.Player;
@@ -12,10 +11,9 @@ import com.creants.pluto.om.Player;
 public class AutoArrangeRequestHandler extends AbstractRequestHandler {
 
 	@Override
-	public IPlayMoveResult handleRequest(User user, Message message) {
+	public void handleRequest(User user, Message message) {
 		Player player = gameLogic.getPlayerByUser(user);
 		gameLogic.processAutoArrangeCommand(player);
-		return null;
 	}
 
 }

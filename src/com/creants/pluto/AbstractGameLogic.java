@@ -34,7 +34,6 @@ public abstract class AbstractGameLogic {
 	public abstract MauBinhGame getGameLogic();
 
 	public abstract void initRequestHandler();
-	
 
 	public void addRequestHandler(short requestId, AbstractRequestHandler requestHandler) {
 		requestHandler.setGameLogic(getGameLogic());
@@ -60,10 +59,11 @@ public abstract class AbstractGameLogic {
 			return null;
 		}
 
-		return requestHandler.handleRequest(user, message);
+		requestHandler.handleRequest(user, message);
+		return null;
 	}
-	
-	protected void initGameApi(GameAPI gameApi){
+
+	protected void initGameApi(GameAPI gameApi) {
 		for (AbstractRequestHandler handler : handlers.values()) {
 			handler.initGameApi(gameApi);
 		}

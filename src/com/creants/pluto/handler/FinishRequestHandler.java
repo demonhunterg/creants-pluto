@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.avengers.netty.gamelib.key.NetworkConstant;
-import com.avengers.netty.gamelib.result.IPlayMoveResult;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
 import com.creants.pluto.om.card.Card;
@@ -21,7 +20,7 @@ public class FinishRequestHandler extends AbstractRequestHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(FinishRequestHandler.class);
 
 	@Override
-	public IPlayMoveResult handleRequest(User user, Message message) {
+	public void handleRequest(User user, Message message) {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(String.format("[DEBUG] Arrange Finished [username:%s]", user.getUserName()));
 		}
@@ -32,8 +31,6 @@ public class FinishRequestHandler extends AbstractRequestHandler {
 			listCards.add(CardSet.getCard(blob[i]));
 		}
 		gameLogic.processFinishCommand(user, listCards);
-
-		return null;
 	}
 
 }

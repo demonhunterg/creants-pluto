@@ -117,8 +117,6 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	@Override
 	public void setDealer(long userId) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

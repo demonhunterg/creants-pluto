@@ -92,6 +92,7 @@ public class MauBinhGame {
 		if (playerSize() <= 1) {
 			gameApi.leaveRoom(user.getUserId());
 		} else {
+			// cho phép reconnect
 			disconnectedUsers.put(user.getUserName(), user);
 			Player playerByUser = getPlayerByUser(user);
 			processFinishCommand(user, processAutoArrangeCommand(playerByUser));

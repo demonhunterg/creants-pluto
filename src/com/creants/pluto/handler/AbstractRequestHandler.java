@@ -1,7 +1,6 @@
 package com.creants.pluto.handler;
 
 import com.avengers.netty.gamelib.GameAPI;
-import com.avengers.netty.gamelib.result.IPlayMoveResult;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
 import com.creants.pluto.logic.MauBinhGame;
@@ -21,7 +20,7 @@ public abstract class AbstractRequestHandler {
 		this.gameLogic = gameLogic;
 	}
 
-	public abstract IPlayMoveResult handleRequest(User sender, Message message);
+	public abstract void handleRequest(User sender, Message message);
 
 	public void initGameApi(GameAPI gameApi) {
 		this.gameApi = gameApi;
