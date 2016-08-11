@@ -35,6 +35,7 @@ import com.google.gson.JsonObject;
 public class MauBinhGame {
 	public STATE gameState;
 	private GameAPI gameApi;
+	private static final MauBinhConfig gameConfig = MauBinhConfig.getInstance();
 	private User winner = null;
 	private MoneyManager moneyManager = null;
 	private transient MauBinhCardSet cardSet;
@@ -89,14 +90,10 @@ public class MauBinhGame {
 	}
 
 	public void disconnect(User user) {
-		if (playerSize() <= 1) {
-			gameApi.leaveRoom(user.getUserId());
-		} else {
-			// cho phép reconnect
-			disconnectedUsers.put(user.getUserName(), user);
-			Player playerByUser = getPlayerByUser(user);
-			processFinishCommand(user, processAutoArrangeCommand(playerByUser));
-		}
+		// cho phép reconnect
+		disconnectedUsers.put(user.getUserName(), user);
+		Player playerByUser = getPlayerByUser(user);
+		processFinishCommand(user, processAutoArrangeCommand(playerByUser));
 	}
 
 	/**
@@ -194,6 +191,7 @@ public class MauBinhGame {
 
 	public void startGame() {
 		try {
+			// TODO kiểm tra trong danh sách disconnect để đá user này ra
 			if (playerSize() < 2) {
 				debug("[DEBUG] Game is begin with a player");
 				return;
@@ -281,6 +279,7 @@ public class MauBinhGame {
 				gameApi.sendToUser(MessageFactory.makeErrorMessage("Bạn không đủ tiền"), user);
 			}
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			// Reporter.getErrorLogger()
 			// .error("MauBinh playerReady error: r" + getRoom().getRoomId() +
 			// "b" + getControllerId(), ex);
@@ -305,18 +304,21 @@ public class MauBinhGame {
 
 	public void leave(User player) {
 		try {
-			// đá ra khỏi bàn chơi
-			kickOut(player);
-
 			if (!isPlaying() || getSeatNumber(player) < 0) {
 				return;
 			}
+
+			// đá ra khỏi bàn chơi
+			kickOut(player);
 
 			if (playerSize() <= 0) {
 				return;
 			}
 
-			moneyManager.updateMoneyForLeave(this, player, countPlayerInTurn(), players);
+			long money = moneyManager.updateMoneyForLeave(this, player, countPlayerInTurn(), players);
+			if (money != 0) {
+				gameApi.updateUserMoney(player, money, 2, "Phạt rời game");
+			}
 			if (canBeFinish()) {
 				for (int i = 0; i < players.length; i++) {
 					if (players[i].getUser() != null) {
@@ -330,6 +332,7 @@ public class MauBinhGame {
 			}
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			// Reporter.getErrorLogger().error("MauBinh leave error: r" +
 			// getRoom().getRoomId() + "b" + getControllerId(),e);
 		}
@@ -339,7 +342,6 @@ public class MauBinhGame {
 		int seatNumber = getSeatNumber(user);
 		players[seatNumber].setUser(null);
 		players[seatNumber].reset();
-		room.removeUser(user);
 	}
 
 	public void setMoney(int value) {
@@ -347,7 +349,7 @@ public class MauBinhGame {
 			return;
 		}
 
-		if (getOwner().getMoney() >= MauBinhConfig.getInstance().getStartMoneyRate() * value) {
+		if (getOwner().getMoney() >= gameConfig.getStartMoneyRate() * value) {
 			moneyManager = new MoneyManager(value);
 		} else {
 			gameApi.sendToUser(MessageFactory.makeErrorMessage("Khong du tien"), getOwner());
@@ -355,8 +357,9 @@ public class MauBinhGame {
 	}
 
 	protected void join(User user, String pwd) {
-		if (user != null && (user.getMoney() >= MauBinhConfig.getInstance().getStartMoneyRate()
-				* Math.max(getMinRoomMoney(), getMoney()))) {
+		System.out.println("[FATAL] join room");
+		if (user != null
+				&& (user.getMoney() >= gameConfig.getStartMoneyRate() * Math.max(getMinRoomMoney(), getMoney()))) {
 			// super.join(user, pwd);
 			if (moneyManager == null || moneyManager.getGameMoney() != getMoney()) {
 				moneyManager = new MoneyManager(getMoney());
@@ -368,11 +371,11 @@ public class MauBinhGame {
 
 			if (getOwner().equals(user)) {
 				int limitTimeType;
-				if (limitTime == MauBinhConfig.getInstance().getLimitTimeSlow()) {
+				if (limitTime == gameConfig.getLimitTimeSlow()) {
 					limitTimeType = 0;
 				} else {
 
-					if (limitTime == MauBinhConfig.getInstance().getLimitTimeFast()) {
+					if (limitTime == gameConfig.getLimitTimeFast()) {
 						limitTimeType = 2;
 					} else {
 						limitTimeType = 1;
@@ -382,6 +385,7 @@ public class MauBinhGame {
 				gameApi.sendToUser(
 						MessageFactory.makeSetLimitTimeMessage((byte) (limitTime / 1000), (byte) limitTimeType), user);
 			}
+
 			byte restTime = 0;
 			if (isPlaying()) {
 				restTime = (byte) ((limitTime - (System.currentTimeMillis() - startTime)) / 1000L);
@@ -394,15 +398,10 @@ public class MauBinhGame {
 	}
 
 	/**
-	 * Giá tự động xếp
+	 * Kiểm tra game có thể hoàn thành không. Tất cả player đã finish chưa.
 	 * 
 	 * @return
 	 */
-	public int getAutoArrangementPrice() {
-		// TODO config giá sử dung tự động xếp
-		return 0;
-	}
-
 	private boolean canBeFinish() {
 		if (players == null || players.length == 0) {
 			return false;
@@ -431,6 +430,9 @@ public class MauBinhGame {
 		return room;
 	}
 
+	/**
+	 * Chia bài
+	 */
 	private void deliveryCard() {
 		for (int i = 0; i < players.length; i++) {
 			players[i].reset();
@@ -453,43 +455,7 @@ public class MauBinhGame {
 						players[i].getCards().getCards(), (byte) players[i].getCards().getMauBinhType());
 				gameApi.sendToUser(message, receiver);
 			}
-			// TODO báo cho user biết bài mậu binh kiểu gì, hiện tại không
-			// cho báo
-			// try {
-			// int countSamco =
-			// CardUtil.demSamCoMB(players[i].getCards().getCards());
-			// if (countSamco > 0) {
-			// getEventManager().addUserGetEvent(p, "MAUBINH_3_SAME_CARD",
-			// countSamco, 1);
-			// }
-			//
-			// int countA =
-			// CardUtil.countA(this.players[i].getCards().getCards());
-			// if (countA == 4) {
-			// getEventManager().addUserGetEvent(p, "MAUBINH_4XI", 1, 2);
-			// }
-			// int countHeo =
-			// CardUtil.countTypeCard(this.players[i].getCards().getCards(),
-			// 12);
-			// if (countHeo == 4) {
-			// getEventManager().addUserGetEvent(p, "MAUBINH_4HEO", 1, 2);
-			// }
-			// } catch (Exception e) {
-			// Reporter.getErrorLogger().error("Event moonfestival error:", e);
-			// }
 		}
-
-		// for (int i = 0; i < players.length; i++) {
-		// if (this.players[i].getCards().isMauBinh()) {
-		// this.players[i].setFinishFlag(true);
-		// try {
-		// getEventManager().addUserGetEvent(this.players[i].getUser(),
-		// "MAUBINH_TOITRANG", 1, 2);
-		// } catch (Exception e) {
-		// Reporter.getErrorLogger().error("getEventMoonFestival error", e);
-		// }
-		// }
-		// }
 
 		Tracer.debugMauBinh(MauBinhGame.class, "Deliver card to: " + sb.toString());
 		// trường hợp đang chia bài mà người chơi bấm tự động bin hết
@@ -502,6 +468,13 @@ public class MauBinhGame {
 		return gameState == STATE.PLAYING;
 	}
 
+	/**
+	 * User gửi lệnh bin xong
+	 * 
+	 * @param user
+	 * @param listCards
+	 *            danh sách card user gửi lên
+	 */
 	public void processFinishCommand(User user, List<Card> listCards) {
 		Player player = getPlayerByUser(user);
 		if (player == null) {
@@ -554,8 +527,11 @@ public class MauBinhGame {
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			Tracer.error(MauBinhGame.class, "[ERROR] processFinishCommand fail!", e);
-			String errorMessage = getMessage(MauBinhGame.class.getName(), new Locale(user.getLocale()), "MissCard");
+			// String errorMessage = getMessage(MauBinhGame.class.getName(), new
+			// Locale(user.getLocale()), "MissCard");
+			String errorMessage = "Lỗi kết thúc game";
 			Message mess = MessageFactory.makeInterfaceErrorMessage(GameCommand.ACTION_FINISH,
 					GameCommand.ERROR_IN_GAME_MISS_CARD, errorMessage);
 			gameApi.sendToUser(mess, user);
@@ -589,25 +565,6 @@ public class MauBinhGame {
 		return result;
 	}
 
-	private String logCard(List<Card> cards) {
-		int count = 0;
-		String chi1 = "";
-		String chi2 = "";
-		String chi3 = "";
-		for (Card card : cards) {
-			if (count < 3) {
-				chi1 += card.getName() + "   ";
-			} else if (count < 8) {
-				chi2 += card.getName() + "   ";
-			} else {
-				chi3 += card.getName() + "   ";
-			}
-			count++;
-		}
-
-		return chi1 + "\n" + chi2 + "\n" + chi3;
-	}
-
 	private void processFinish() {
 		if (players == null) {
 			return;
@@ -623,10 +580,15 @@ public class MauBinhGame {
 		// players, winMoney);
 
 		for (int i = 0; i < players.length; i++) {
-			if (players[i].getUser() != null) {
+			User user = players[i].getUser();
+			if (user != null) {
+				if (winMoney[i] != 0) {
+					gameApi.updateUserMoney(user, winMoney[i], 1, "Cập nhật tiền kết thúc game");
+				}
+
 				Message message = MessageFactory.makeResultMessage(i, players, winMoney, winChi, result);
 				if (message != null) {
-					gameApi.sendToUser(message, players[i].getUser());
+					gameApi.sendToUser(message, user);
 				}
 			}
 		}
@@ -758,6 +720,25 @@ public class MauBinhGame {
 		if (countdownSchedule != null) {
 			countdownSchedule.cancel(true);
 		}
+	}
+
+	private String logCard(List<Card> cards) {
+		int count = 0;
+		String chi1 = "";
+		String chi2 = "";
+		String chi3 = "";
+		for (Card card : cards) {
+			if (count < 3) {
+				chi1 += card.getName() + "   ";
+			} else if (count < 8) {
+				chi2 += card.getName() + "   ";
+			} else {
+				chi3 += card.getName() + "   ";
+			}
+			count++;
+		}
+
+		return chi1 + "\n" + chi2 + "\n" + chi3;
 	}
 
 	public static enum STATE {

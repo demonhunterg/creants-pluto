@@ -26,6 +26,7 @@ public class JoinRoomRequestHandler extends AbstractRequestHandler {
 			LOG.debug(String.format("[DEBUG] Join Room [username: %s, roomId:%d, roomName:%s]", user.getUserName(),
 					lastJoinedRoom.getId(), lastJoinedRoom.getName()));
 		}
+		
 
 		RoomSize roomSize = lastJoinedRoom.getSize();
 		int totalUsers = roomSize.getTotalUsers();

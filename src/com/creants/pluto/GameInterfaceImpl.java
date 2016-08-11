@@ -14,7 +14,6 @@ import com.avengers.netty.socket.gate.wood.User;
 import com.creants.pluto.handler.AutoArrangeRequestHandler;
 import com.creants.pluto.handler.FinishRequestHandler;
 import com.creants.pluto.handler.JoinRoomRequestHandler;
-import com.creants.pluto.handler.UserDisconnectHandler;
 import com.creants.pluto.logic.MauBinhGame;
 import com.creants.pluto.util.GameCommand;
 import com.creants.pluto.util.MessageFactory;
@@ -49,7 +48,6 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 		addRequestHandler(SystemNetworkConstant.COMMAND_USER_JOIN_ROOM, new JoinRoomRequestHandler());
 		addRequestHandler(GameCommand.ACTION_AUTO_ARRANGE, new AutoArrangeRequestHandler());
 		addRequestHandler(GameCommand.ACTION_FINISH, new FinishRequestHandler());
-		addRequestHandler(SystemNetworkConstant.COMMAND_USER_DISCONNECT, new UserDisconnectHandler());
 	}
 
 	@Override
@@ -71,21 +69,30 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 	@Override
 	public void leaveRoom(User user, IRoom room) {
 		int totalUsers = room.countPlayer();
-		Tracer.debugMauBinh(GameInterfaceImpl.class, "[DEBUG] user leave room.", "username:" + user.getUserName(),
+		Tracer.debugMauBinh(GameInterfaceImpl.class, "[FATAL] user leave room.", "username:" + user.getUserName(),
 				"room:" + room.getName(), "count player: " + totalUsers);
 		// trường hợp thoát ra còn một người chơi duy nhất thì không đếm
 		if (totalUsers < 2) {
 			gameLogic.stopCountDown();
 		}
 
-		gameLogic.leave(user);
+		// báo người chơi còn lại user đó leave
 		Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_QUIT_GAME);
 		message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getUserId());
 		gameAPI.sendAllInRoomExceptUser(message, user);
 
-		if (room.isOwner(user)) {
+		gameLogic.leave(user);
+	}
 
-		}
+	@Override
+	public void joinRoom(User user, IRoom room) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void disconnect(User user) {
+		gameLogic.disconnect(user);
 	}
 
 	@Override
@@ -98,7 +105,7 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	@Override
 	public StartGameResult onStartGame(User owner, List<User> listPlayer, Message extraData) {
-		// TODO Auto-generated method stub
+		// TODO Trường hợp chủ động start
 		return null;
 	}
 

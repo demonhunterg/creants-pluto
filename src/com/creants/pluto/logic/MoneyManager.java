@@ -141,7 +141,8 @@ public class MoneyManager {
 
 		Iterator<Integer> localIterator;
 		for (int i = 0; i < players.length; i++) {
-			if (players[i].getUser() != null) {
+			User user = players[i].getUser();
+			if (user != null) {
 				List<Integer> listmoney = new ArrayList<Integer>();
 				if (winMoney[i] > Integer.MAX_VALUE || winMoney[i] < Integer.MIN_VALUE) {
 					listmoney = splitBigMoney(winMoney[i]);
@@ -157,7 +158,7 @@ public class MoneyManager {
 					}
 
 					if (money < 0) {
-						money = -(int) Math.min(-money, players[i].getUser().getMoney());
+						money = -(int) Math.min(-money, user.getMoney());
 					}
 
 					// TODO lưu lại thông tin tiền cho người chơi, nhớ lúc lưu
@@ -186,9 +187,10 @@ public class MoneyManager {
 		return listInt;
 	}
 
-	public void updateMoneyForLeave(MauBinhGame controller, User leaver, int playerNo, Player[] players) {
+	public long updateMoneyForLeave(MauBinhGame controller, User leaver, int playerNo, Player[] players) {
+		int value = 0;
 		try {
-			int value = (int) Math.min(leaver.getMoney(), MauBinhConfig.getInstance().getChiLeaveBonus() * gameMoney);
+			value = (int) Math.min(leaver.getMoney(), MauBinhConfig.getInstance().getChiLeaveBonus() * gameMoney);
 
 			// TODO update tiền lý do người chơi rời phòng
 			// controller.updateMoney(user, -value*playerNo, description);
@@ -202,9 +204,12 @@ public class MoneyManager {
 					players[i].addBonusChi(MauBinhConfig.getInstance().getChiLeaveBonus());
 				}
 			}
+
 		} catch (Exception e) {
 			Tracer.error(MoneyManager.class, "[ERROR] updateMoneyForLeave fail!", e);
 		}
+
+		return value;
 	}
 
 	private long[] calculateMoneyForPlayer(int index, Player[] players, double[][] result, long addMoney) {
