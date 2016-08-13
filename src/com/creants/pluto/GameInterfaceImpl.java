@@ -69,11 +69,15 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 	@Override
 	public void leaveRoom(User user, IRoom room) {
 		int totalUsers = room.countPlayer();
-		Tracer.debugMauBinh(GameInterfaceImpl.class, "[FATAL] user leave room.", "username:" + user.getUserName(),
-				"room:" + room.getName(), "count player: " + totalUsers);
+		Tracer.debugPlutoGame(GameInterfaceImpl.class,
+				String.format("[DEBUG] [IN_GAME] [user:%s] leave room [%s], [countPlayer: %d] ", user.getUserName(),
+						room.getName(), totalUsers));
+
 		// trường hợp thoát ra còn một người chơi duy nhất thì không đếm
 		if (totalUsers < 2) {
 			gameLogic.stopCountDown();
+			Tracer.debugPlutoGame(GameInterfaceImpl.class,
+					String.format("[DEBUG] [IN_GAME] room [%s] stop countdown", room.getName()));
 		}
 
 		// báo người chơi còn lại user đó leave

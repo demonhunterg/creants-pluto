@@ -148,15 +148,15 @@ public class MessageFactory {
 					winChi2 += winChi02;
 					int winChi03 = result[playerIndex][i].getWinChi03();
 					winChi3 += winChi03;
-					int winChiAce2 = result[playerIndex][i].getWinChiAce();
-					winchiAce += winChiAce2;
+					// int winChiAce2 = result[playerIndex][i].getWinChiAce();
+					// winchiAce += winChiAce2;
 
 					jo.addProperty("card_list", GsonUtils.toGsonString(cardIds));
 					jo.addProperty("winchi_maubinh", -winChiMauBinh2);
 					jo.addProperty("winchi_1", -winChi01);
 					jo.addProperty("winchi_2", -winChi02);
 					jo.addProperty("winchi_3", -winChi03);
-					jo.addProperty("winchi_ace", -winChiAce2);
+					// jo.addProperty("winchi_ace", -winChiAce2);
 					ja.add(jo);
 				}
 			}

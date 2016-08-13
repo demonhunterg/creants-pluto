@@ -206,7 +206,7 @@ public class MoneyManager {
 			}
 
 		} catch (Exception e) {
-			Tracer.error(MoneyManager.class, "[ERROR] updateMoneyForLeave fail!", e);
+			Tracer.debugPlutoGame(MoneyManager.class, "[ERROR] [IN_GAME]updateMoneyForLeave fail! ", e);
 		}
 
 		return value;

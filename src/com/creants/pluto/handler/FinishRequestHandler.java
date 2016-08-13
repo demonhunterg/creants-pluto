@@ -30,7 +30,7 @@ public class FinishRequestHandler extends AbstractRequestHandler {
 		for (int i = 0; i < 13; i++) {
 			listCards.add(CardSet.getCard(blob[i]));
 		}
-		gameLogic.processFinishCommand(user, listCards);
+		gameLogic.processBinhFinish(user, listCards);
 	}
 
 }

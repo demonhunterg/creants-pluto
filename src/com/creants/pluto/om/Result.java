@@ -50,7 +50,7 @@ public class Result {
 
 		// return (getWinChi01() + getWinChi02() + getWinChi03()) * getMultiK()
 		// + getWinChiAce();
-		return getWinChi01() + getWinChi02() + getWinChi03() + getWinChiAce();
+		return getWinChi01() + getWinChi02() + getWinChi03();
 	}
 
 	public int getMultiK() {
@@ -77,6 +77,11 @@ public class Result {
 		winChiAce = value;
 	}
 
+	/**
+	 * Set tỉ lệ giá trị thắng nếu win cả 3 chi
+	 * 
+	 * @param value
+	 */
 	public void setMultiK(int value) {
 		multiK = value;
 	}
@@ -88,7 +93,7 @@ public class Result {
 		ret.setWinChi01(-getWinChi01());
 		ret.setWinChi02(-getWinChi02());
 		ret.setWinChi03(-getWinChi03());
-		ret.setWinChiAce(-getWinChiAce());
+		// ret.setWinChiAce(-getWinChiAce());
 		ret.setMultiK(getMultiK());
 
 		return ret;

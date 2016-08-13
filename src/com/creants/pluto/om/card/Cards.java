@@ -371,7 +371,7 @@ public class Cards {
 			ret.setMultiK(MauBinhConfig.getInstance().getChiWinThreeSetRate());
 		}
 
-		ret.setWinChiAce(getNumberOfAce() - cards.getNumberOfAce());
+		// ret.setWinChiAce(getNumberOfAce() - cards.getNumberOfAce());
 		return ret;
 	}
 
@@ -398,8 +398,8 @@ public class Cards {
 		}
 
 		ret.setWinChi03(result);
-		ret.setMultiK(MauBinhConfig.getInstance().getChiWinThreeSetRate());
-		ret.setWinChiAce(getNumberOfAce());
+		// ret.setMultiK(MauBinhConfig.getInstance().getChiWinThreeSetRate());
+		// ret.setWinChiAce(getNumberOfAce());
 
 		return ret;
 	}
