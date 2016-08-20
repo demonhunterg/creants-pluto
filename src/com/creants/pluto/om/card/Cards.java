@@ -32,7 +32,7 @@ public class Cards {
 		maubinhType = MauBinhType.NOT_MAU_BINH;
 	}
 
-	public List<Card> getCards() {
+	public List<Card> list() {
 		return cards;
 	}
 
@@ -140,7 +140,7 @@ public class Cards {
 	}
 
 	public boolean isEnoughCard() {
-		return getCards().size() == 13;
+		return list().size() == 13;
 	}
 
 	public boolean isFinishArrangement() {
@@ -197,7 +197,7 @@ public class Cards {
 	 * @return
 	 */
 	public Result compareWith(Cards cards) {
-		if (cards == null || getCards() == null || cards.getCards() == null || (!isEnoughCard())
+		if (cards == null || list() == null || cards.list() == null || (!isEnoughCard())
 				|| (!cards.isEnoughCard())) {
 			return null;
 		}

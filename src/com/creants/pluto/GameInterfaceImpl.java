@@ -15,6 +15,7 @@ import com.creants.pluto.handler.AutoArrangeRequestHandler;
 import com.creants.pluto.handler.FinishRequestHandler;
 import com.creants.pluto.handler.JoinRoomRequestHandler;
 import com.creants.pluto.logic.MauBinhGame;
+import com.creants.pluto.logic.MauBinhGame.STATE;
 import com.creants.pluto.util.GameCommand;
 import com.creants.pluto.util.MessageFactory;
 import com.google.gson.JsonObject;
@@ -74,7 +75,7 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 						room.getName(), totalUsers));
 
 		// trường hợp thoát ra còn một người chơi duy nhất thì không đếm
-		if (totalUsers < 2) {
+		if (totalUsers < 2 && gameLogic.gameState == STATE.NOT_START) {
 			gameLogic.stopCountDown();
 			Tracer.debugPlutoGame(GameInterfaceImpl.class,
 					String.format("[DEBUG] [IN_GAME] room [%s] stop countdown", room.getName()));

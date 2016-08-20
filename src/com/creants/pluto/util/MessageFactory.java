@@ -132,7 +132,7 @@ public class MessageFactory {
 
 					List<Card> cardList = cards.getArrangeCards();
 					if (cardList == null) {
-						cardList = cards.getCards();
+						cardList = cards.list();
 					}
 
 					byte[] cardIds = new byte[cardList.size()];
@@ -161,7 +161,7 @@ public class MessageFactory {
 				}
 			}
 		} catch (Exception e) {
-			Tracer.error(MessageFactory.class, "[ERROR] makeResultMessage fail!", e);
+			Tracer.errorRoom(MessageFactory.class, "[ERROR] makeResultMessage fail!", e);
 		}
 
 		gameResult.addProperty("winchi_maubinh", winChiMauBinh);

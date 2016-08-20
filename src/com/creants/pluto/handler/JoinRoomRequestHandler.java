@@ -25,10 +25,11 @@ public class JoinRoomRequestHandler extends AbstractRequestHandler {
 
 		RoomSize roomSize = lastJoinedRoom.getSize();
 		int totalUsers = roomSize.getTotalUsers();
+		System.out.println("[ERROR] **************** GAME STATE ********************" + gameLogic.gameState);
 		if (totalUsers >= 2 && gameLogic.gameState == STATE.NOT_START) {
 			Tracer.debugPlutoGame(JoinRoomRequestHandler.class,
 					String.format("[IN_GAME] [DEBUG] waiting user join game in %d seconds", 10));
-			gameLogic.startCountDown(10);
+			gameLogic.startCountDown(gameLogic.getStartAfterSeconds());
 			message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_START_AFTER_COUNTDOWN);
 			message.putInt(NetworkConstant.KEYI_TIMEOUT, gameLogic.getStartAfterSeconds());
 			gameApi.sendAllInRoom(message);

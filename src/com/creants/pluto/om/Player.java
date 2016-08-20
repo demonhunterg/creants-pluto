@@ -15,19 +15,21 @@ public class Player {
 	private boolean isFinish;
 	private boolean isUsedAutoArrangement;
 	private boolean timeOut;
+	private boolean isReady;
 
 	public Player() {
 		reset();
 	}
 
 	public void reset() {
+		user = null;
 		cards = new Cards();
-
 		bonusMoney = 0;
 		bonusChi = 0;
 		isFinish = false;
-		timeOut = false;
 		isUsedAutoArrangement = false;
+		timeOut = false;
+		isReady = false;
 	}
 
 	public int getUserId() {
@@ -84,6 +86,14 @@ public class Player {
 
 	public void setAutoArrangementFlag(boolean value) {
 		isUsedAutoArrangement = value;
+	}
+
+	public boolean isReady() {
+		return isReady;
+	}
+
+	public void setReady(boolean isReady) {
+		this.isReady = isReady;
 	}
 
 }

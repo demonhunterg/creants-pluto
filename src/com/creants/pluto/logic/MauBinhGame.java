@@ -40,7 +40,7 @@ public class MauBinhGame {
 	private MoneyManager moneyManager = null;
 	private transient MauBinhCardSet cardSet;
 	private Player[] players;
-	private int limitTime = 60;
+	private int limitTime = 90;
 	// thời gian khi start game
 	private long startTime;
 	private IRoom room;
@@ -92,10 +92,6 @@ public class MauBinhGame {
 	public void disconnect(User user) {
 		// cho phép reconnect
 		disconnectedUsers.put(user.getUserName(), user);
-		Player playerByUser = getPlayerByUser(user);
-		if (isPlaying()) {
-			processBinhFinish(user, processAutoArrangeCommand(playerByUser));
-		}
 	}
 
 	/**
@@ -126,38 +122,13 @@ public class MauBinhGame {
 			return;
 		}
 
-		List<Card> cardList = player.isFinish() ? player.getCards().getArrangeCards() : player.getCards().getCards();
+		List<Card> cardList = player.isFinish() ? player.getCards().getArrangeCards() : player.getCards().list();
 		gameApi.sendToUser(MessageFactory.makeInGameInforMessage(player.isFinish(), cardList, limitTime / 1000,
 				restTime, (byte) player.getCards().getMauBinhType()), user);
 	}
 
 	private User getOwner() {
 		return room.getOwner();
-	}
-
-	private boolean isTimeout() {
-		return true;
-	}
-
-	public void update() {
-		try {
-			if (isPlaying() && isTimeout()) {
-				boolean havePlayerAutoFinish = false;
-				for (Player player : players) {
-					if ((player.getUser() != null) && isPlaying() && !player.isFinish()) {
-						player.setIsTimeOut(true);
-						List<Card> listAutoArrangeCards = processAutoArrangeCommand(player);
-						processBinhFinish(player.getUser(), listAutoArrangeCards);
-						havePlayerAutoFinish = true;
-					}
-				}
-				if (!havePlayerAutoFinish) {
-					processGameFinish();
-				}
-			}
-		} catch (Exception e) {
-			Tracer.error(MauBinhGame.class, "[ERROR] update fail!", e);
-		}
 	}
 
 	public long getMoney() {
@@ -175,10 +146,11 @@ public class MauBinhGame {
 
 		if (countdownSchedule == null || countdownSchedule.isCancelled()) {
 			countDown();
-		} else {
-			debug(String.format("[DEBUG] [room:%s] Do startCountDown with countdown schedule not cancel yet!",
-					room.getName()));
+			return;
 		}
+
+		debug(String.format("[ERROR] [room:%s] Do startCountDown with countdown schedule not cancel yet!",
+				room.getName()));
 	}
 
 	private void debug(Object... msgs) {
@@ -224,9 +196,9 @@ public class MauBinhGame {
 			deliveryCard();
 
 			debug(String.format("[DEBUG] Delivery card finish [roomId: %d, roomName: %s]. Start timeout in %d seconds",
-					room.getId(), room.getName(), 31));
+					room.getId(), room.getName(), 91));
 
-			startCountDown(31);
+			startCountDown(91);
 		} catch (Exception e) {
 			Tracer.error(MauBinhGame.class, "[ERROR] startGame fail!", e);
 		}
@@ -249,7 +221,7 @@ public class MauBinhGame {
 	private int getSeatNumber(User user) {
 		for (int i = 0; i < players.length; i++) {
 			Player player = players[i];
-			if (player != null && player.getUserId() == user.getUserId())
+			if (player.getUser() != null && player.getUserId() == user.getUserId())
 				return i;
 		}
 
@@ -274,8 +246,9 @@ public class MauBinhGame {
 			}
 
 			if (moneyManager.enoughMoneyToStart(user)) {
-				debug("[DEBUG] [user:%s] playerReady! Not enough money", user.getUserName());
-				// super.playerReady(user, bln);
+				debug("[DEBUG] [user:%s] playerReady!", user.getUserName());
+				Player player = players[nSeat];
+				player.setReady(true);
 			} else {
 				gameApi.sendToUser(MessageFactory.makeErrorMessage("Bạn không đủ tiền"), user);
 			}
@@ -284,16 +257,16 @@ public class MauBinhGame {
 		}
 	}
 
-	private boolean isInTurn(User user) {
-		return true;
-	}
-
+	/**
+	 * Đếm số player trong bàn chơi
+	 * 
+	 * @return
+	 */
 	private int countPlayerInTurn() {
 		int count = 0;
 		for (int i = 0; i < players.length; i++) {
 			if (players[i].getUser() != null) {
-				if (isInTurn(players[i].getUser()))
-					count++;
+				count++;
 			}
 		}
 
@@ -429,7 +402,7 @@ public class MauBinhGame {
 	 * Chia bài
 	 */
 	private void deliveryCard() {
-		debug("[DEBUG] Do deliver card");
+		debug("[ERROR] Do deliver card");
 		for (int i = 0; i < players.length; i++) {
 			players[i].reset();
 		}
@@ -438,19 +411,16 @@ public class MauBinhGame {
 			players[(i % 4)].getCards().receivedCard(cardSet.dealCard());
 		}
 
-		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < playerSize(); i++) {
 			User receiver = getUser(i);
 			players[i].setUser(receiver);
 			if (receiver != null) {
-				sb.append(receiver.getUserName() + ";");
 				Message message = MessageFactory.makeStartMessage(getRoom().getId(), limitTime / 1000,
-						players[i].getCards().getCards(), (byte) players[i].getCards().getMauBinhType());
+						players[i].getCards().list(), (byte) players[i].getCards().getMauBinhType());
 				gameApi.sendToUser(message, receiver);
 			}
 		}
 
-		debug("[DEBUG] Deliver card to: " + sb.toString());
 		// trường hợp đang chia bài mà người chơi bấm tự động bin hết
 		if (GameChecker.isFinishAll(players)) {
 			processGameFinish();
@@ -541,7 +511,7 @@ public class MauBinhGame {
 	public List<Card> processAutoArrangeCommand(Player player) {
 		List<Card> result = new ArrayList<Card>();
 		try {
-			result = AutoArrangement.getSolution(player.getCards().getCards());
+			result = AutoArrangement.getSolution(player.getCards().list());
 			debug(String.format("[DEBUG] Auto Arrange [username:%s] cards:\n %s", player.getUser().getUserName(),
 					logCard(result)));
 
@@ -559,7 +529,9 @@ public class MauBinhGame {
 	}
 
 	private void processGameFinish() {
-		debug(String.format("[DEBUG] [room:%s] Do processGameFinish!", room.getName()));
+		gameState = STATE.CALCULATE;
+		stopCountDown();
+		debug(String.format("[DEBUG] calculating........................ in! 5 seconds"));
 		Result[][] result = GameChecker.comparePlayers(players);
 		int[] winChi = GameChecker.getWinChi(players, result);
 		long[] winMoney = moneyManager.calculateMoney(winChi);
@@ -578,8 +550,10 @@ public class MauBinhGame {
 							user.getUserName(), winMoney[i]));
 				}
 
+				// gửi thông tin kết quả cho player
 				Message message = MessageFactory.makeResultMessage(i, players, winMoney, winChi, result);
 				if (message != null) {
+					debug("Game result: " + message.toString());
 					gameApi.sendToUser(message, user);
 				}
 			}
@@ -592,13 +566,8 @@ public class MauBinhGame {
 			setMoneyToMin();
 		}
 
-		stopGame();
-
-		gameState = STATE.FINISH;
-
-		debug(String.format("[DEBUG] start after %d seconds!", 15));
-		// start game sau 15 giay
-		startCountDown(15);
+		// show bài trong 5s
+		startCountDown(5);
 	}
 
 	private User getWinner(int[] winChi) {
@@ -660,20 +629,25 @@ public class MauBinhGame {
 		debug("[DEBUG] Start countdown in " + countDownSeconds + " seconds");
 		countdownSchedule = scheduler.scheduleAtFixedRate(new Runnable() {
 			public void run() {
-				synchronized (countDownSeconds) {
-					if (countDownSeconds > 0) {
-						countDownSeconds--;
-					} else {
+				try {
+					synchronized (countDownSeconds) {
+						if (countDownSeconds > 0) {
+							countDownSeconds--;
+							// debug("[FATAL] " + countDownSeconds);
+							return;
+						}
+
+						// Game is begin
 						if (gameState == STATE.NOT_START) {
-							debug(String.format("[DEBUG] countdown finished! Start game"));
-							// start game
 							stopCountDown();
-							processUserDisconnect();
+							debug(String.format("[DEBUG] countdown finished! Start game"));
 							startGame();
-						} else if (gameState == STATE.PLAYING) {
+							return;
+						}
+
+						// trường hợp hết giờ xếp bài, thực hiện kết thúc
+						if (gameState == STATE.PLAYING) {
 							debug(String.format("[DEBUG] countdown finished! Timeout"));
-							// trường hợp hết giờ xếp bài, thực hiện kết thúc
-							// game
 							for (int i = 0; i < players.length; i++) {
 								if (players[i].getUser() != null) {
 									players[i].setFinishFlag(true);
@@ -684,42 +658,69 @@ public class MauBinhGame {
 								processGameFinish();
 							}
 
-						} else if (gameState == STATE.FINISH) {
-							gameState = STATE.NOT_START;
+							return;
+						}
+
+						if (gameState == STATE.CALCULATE) {
+							stopCountDown();
+							// đá player bị mất kết nối
 							processUserDisconnect();
+							debug("[FATAL] Check player ready.");
+							// đá player chưa sẵn sàn cho ván kế
+							for (int i = 0; i < players.length; i++) {
+								Player player = players[i];
+								if (player.getUser() != null && !player.isReady()) {
+									// TODO đá ra
+								}
+							}
+
+							stopGame();
+							gameState = STATE.FINISH;
+							debug("[FATAL] Update state to FINSH");
+
+							// đếm cho ván tiếp theo
+							startCountDown(6);
+							return;
+						}
+
+						if (gameState == STATE.FINISH) {
+							gameState = STATE.NOT_START;
 							startGame();
 						}
 					}
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
+
 			}
 		}, 0, 1, TimeUnit.SECONDS);
 
 	}
 
 	private void processUserDisconnect() {
+		debug("[DEBUG] processUserDisconnect...................");
 		// có thằng nào disconnect trước đó ko, có thì đá ra
 		if (disconnectedUsers.size() > 0) {
 			Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_QUIT_GAME);
 			User user = null;
 			for (String username : disconnectedUsers.keySet()) {
-				debug(String.format("[DEBUG] process disconnect for [user: %s]", username));
 				user = disconnectedUsers.get(username);
+				debug(String.format("[DEBUG] process disconnect for [user: %s, user_id: %d]", username,
+						user.getUserId()));
 				message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getUserId());
 				gameApi.sendAllInRoomExceptUser(message, user);
 				disconnectedUsers.remove(username);
-
-				kickOut(user);
 			}
 		}
+
+		debug("[FATAL] processUserDisconnect finished...................");
 	}
 
 	public void stopCountDown() {
 		debug("[DEBUG] stop count down");
-		countDownSeconds = startAfterSeconds;
+		// countDownSeconds = startAfterSeconds;
 
-		if (countdownSchedule != null) {
-			countdownSchedule.cancel(true);
-		}
+		countdownSchedule.cancel(false);
 	}
 
 	private String logCard(List<Card> cards) {
