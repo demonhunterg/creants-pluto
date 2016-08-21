@@ -567,7 +567,7 @@ public class MauBinhGame {
 		}
 
 		// show bài trong 5s
-		startCountDown(5);
+		startCountDown(6);
 	}
 
 	private User getWinner(int[] winChi) {
@@ -669,8 +669,12 @@ public class MauBinhGame {
 							// đá player chưa sẵn sàn cho ván kế
 							for (int i = 0; i < players.length; i++) {
 								Player player = players[i];
-								if (player.getUser() != null && !player.isReady()) {
-									// TODO đá ra
+								User user = player.getUser();
+								if (user != null && !player.isReady()) {
+									room.removeUser(user);
+									Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_QUIT_GAME);
+									message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getUserId());
+									gameApi.sendAllInRoomExceptUser(message, user);
 								}
 							}
 
@@ -679,7 +683,7 @@ public class MauBinhGame {
 							debug("[FATAL] Update state to FINSH");
 
 							// đếm cho ván tiếp theo
-							startCountDown(6);
+							startCountDown(10);
 							return;
 						}
 

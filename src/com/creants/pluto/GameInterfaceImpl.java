@@ -14,6 +14,7 @@ import com.avengers.netty.socket.gate.wood.User;
 import com.creants.pluto.handler.AutoArrangeRequestHandler;
 import com.creants.pluto.handler.FinishRequestHandler;
 import com.creants.pluto.handler.JoinRoomRequestHandler;
+import com.creants.pluto.handler.ReadyRequestHandler;
 import com.creants.pluto.logic.MauBinhGame;
 import com.creants.pluto.logic.MauBinhGame.STATE;
 import com.creants.pluto.util.GameCommand;
@@ -49,6 +50,7 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 		addRequestHandler(SystemNetworkConstant.COMMAND_USER_JOIN_ROOM, new JoinRoomRequestHandler());
 		addRequestHandler(GameCommand.ACTION_AUTO_ARRANGE, new AutoArrangeRequestHandler());
 		addRequestHandler(GameCommand.ACTION_FINISH, new FinishRequestHandler());
+		addRequestHandler(GameCommand.ACTION_READY, new ReadyRequestHandler());
 	}
 
 	@Override
