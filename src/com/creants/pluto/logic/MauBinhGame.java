@@ -671,6 +671,7 @@ public class MauBinhGame {
 								Player player = players[i];
 								User user = player.getUser();
 								if (user != null && !player.isReady()) {
+									debug("[FATAL] kickout player:" + user.getUserName());
 									room.removeUser(user);
 									Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_QUIT_GAME);
 									message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getUserId());

@@ -104,7 +104,7 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	@Override
 	public IPlayMoveResult onPlayMoveHandle(User sender, Message message) {
-		IPlayMoveResult playMoveResult = processRequest(message.getByte(SystemNetworkConstant.KEYR_ACTION_IN_GAME),
+		IPlayMoveResult playMoveResult = processRequest(message.getShort(SystemNetworkConstant.KEYR_ACTION_IN_GAME),
 				sender, message);
 		// TODO kiểm tra trạng thái của game
 		return playMoveResult;
