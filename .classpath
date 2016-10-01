@@ -5,9 +5,10 @@
 	<classpathentry kind="lib" path="lib/core-lib.jar" sourcepath="/netty-core"/>
 	<classpathentry kind="lib" path="lib/game-lib.jar" sourcepath="/netty-core"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-api-1.7.18.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.18.jar" sourcepath="C:/Users/LamHa/.m2/repository/org/slf4j/slf4j-api/1.7.18/slf4j-api-1.7.18-sources.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.18.jar"/>
 	<classpathentry kind="lib" path="lib/gson-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar"/>
+	<classpathentry kind="lib" path="lib/joda-time-2.9.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

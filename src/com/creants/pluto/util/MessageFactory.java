@@ -2,6 +2,9 @@ package com.creants.pluto.util;
 
 import java.util.List;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 import com.avengers.netty.core.event.SystemNetworkConstant;
 import com.avengers.netty.core.util.Tracer;
 import com.avengers.netty.gamelib.key.NetworkConstant;
@@ -34,6 +37,7 @@ public class MessageFactory {
 		try {
 			message.putInt(SystemNetworkConstant.KEYI_ROOM_ID, roomId);
 			message.putInt(NetworkConstant.KEYI_TIMEOUT, limitTime);
+			message.putLong(GameCommand.KEYL_UTC_TIME, DateTime.now().toDateTime(DateTimeZone.UTC).getMillis());
 
 			byte[] cardIds = new byte[cards.size()];
 			for (int i = 0; i < cards.size(); i++) {
@@ -110,7 +114,7 @@ public class MessageFactory {
 		gameResult.addProperty("money", winMoney[playerIndex]);
 		gameResult.addProperty("winchi_no", winChi[playerIndex]);
 		Cards cards = players[playerIndex].getCards();
-		byte type = (byte) (cards.IsFailedArrangement() ? MauBinhType.BINH_LUNG : cards.getMauBinhType());
+		byte type = cards.isFailedArrangement() ? MauBinhType.BINH_LUNG : cards.getMauBinhType();
 		gameResult.addProperty("mau_binh_type", type);
 		int winChiMauBinh = 0, winChi1 = 0, winChi2 = 0, winChi3 = 0, winchiAce = 0;
 
@@ -127,7 +131,7 @@ public class MessageFactory {
 					jo.addProperty("money", winMoney[i]);
 					jo.addProperty("winchi_no", winChi[i]);
 					cards = players[i].getCards();
-					type = (byte) (cards.IsFailedArrangement() ? MauBinhType.BINH_LUNG : cards.getMauBinhType());
+					type = cards.isFailedArrangement() ? MauBinhType.BINH_LUNG : cards.getMauBinhType();
 					jo.addProperty("mau_binh_type", type);
 
 					List<Card> cardList = cards.getArrangeCards();
@@ -247,6 +251,7 @@ public class MessageFactory {
 			}
 
 			message.putBytes(NetworkConstant.KEYBLOB_CARD_LIST, cardIds);
+			message.putLong(GameCommand.KEYL_UTC_TIME, DateTime.now().toDateTime(DateTimeZone.UTC).getMillis());
 		} catch (Exception e) {
 			Tracer.error(MessageFactory.class, "[ERROR] makeAutoArrangeResultMessage fail!", e);
 		}

@@ -20,7 +20,7 @@ public class Cards {
 	private SmallSet set01;
 	private MiddleSet set02;
 	private LastSet set03;
-	private int maubinhType;
+	private byte maubinhType;
 
 	public Cards() {
 		cards = new ArrayList<Card>();
@@ -135,7 +135,7 @@ public class Cards {
 		return get3rdSet().receivedCard(card);
 	}
 
-	public int getMauBinhType() {
+	public byte getMauBinhType() {
 		return maubinhType;
 	}
 
@@ -174,7 +174,7 @@ public class Cards {
 	 * 
 	 * @return
 	 */
-	public boolean IsFailedArrangement() {
+	public boolean isFailedArrangement() {
 		if (isMauBinh()) {
 			return false;
 		}
@@ -197,8 +197,7 @@ public class Cards {
 	 * @return
 	 */
 	public Result compareWith(Cards cards) {
-		if (cards == null || list() == null || cards.list() == null || (!isEnoughCard())
-				|| (!cards.isEnoughCard())) {
+		if (cards == null || cards.list() == null || !isEnoughCard() || !cards.isEnoughCard()) {
 			return null;
 		}
 
@@ -232,7 +231,7 @@ public class Cards {
 	}
 
 	public String getName() {
-		if (IsFailedArrangement())
+		if (isFailedArrangement())
 			return MauBinhConfig.getInstance().getNameFailedArrangement();
 
 		if (isMauBinh()) {
@@ -266,11 +265,12 @@ public class Cards {
 		case 7:
 			return MauBinhConfig.getInstance().getNameMauBinhSameColor13();
 		}
+
 		return MauBinhConfig.getInstance().getNameNotMauBinh();
 	}
 
 	private boolean isContainCard(Card card) {
-		for (Card card2 : this.cards) {
+		for (Card card2 : cards) {
 			if (card.getId() == card2.getId()) {
 				return true;
 			}
@@ -315,6 +315,7 @@ public class Cards {
 		case 7:
 			return MauBinhConfig.getInstance().getChiMauBinhSameColor13();
 		}
+
 		return Integer.MIN_VALUE;
 	}
 
@@ -326,14 +327,15 @@ public class Cards {
 	 * @return
 	 */
 	private Result compareNotMauBinhWithNotMauBinh(Cards cards) {
-		if (IsFailedArrangement()) {
-			if (cards.IsFailedArrangement()) {
+		if (isFailedArrangement()) {
+			if (cards.isFailedArrangement()) {
 				return new Result();
 			}
+			
 			return cards.compareNotMauBinhWithFailed().getNegative();
 		}
 
-		if (cards.IsFailedArrangement()) {
+		if (cards.isFailedArrangement()) {
 			return compareNotMauBinhWithFailed();
 		}
 

@@ -40,6 +40,11 @@ public class LastSet extends BigSet {
 		return MauBinhConfig.getInstance().getChiLastFourOfKind();
 	}
 
+	/**
+	 * Số chi thắng của Thùng Phá Sảnh
+	 * 
+	 * @return
+	 */
 	private int getWinChiOfStraightFlush() {
 		int size = getCards().size();
 		if (MauBinhCardSet.isAce(getCards().get(size - 1))) {

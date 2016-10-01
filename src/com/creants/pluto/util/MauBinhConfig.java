@@ -54,7 +54,6 @@ public class MauBinhConfig extends PropertyConfigurator {
 		return 0;
 	}
 
-
 	public int getLimitTimeDefault() {
 		return getIntAttribute("maubinh.LimitTimeDefault");
 	}
@@ -76,7 +75,7 @@ public class MauBinhConfig extends PropertyConfigurator {
 	}
 
 	public int getChiLeaveBonus() {
-//		return getIntAttribute("maubinh.ChiLeaveBonus");
+		// return getIntAttribute("maubinh.ChiLeaveBonus");
 		return 6;
 	}
 

@@ -32,4 +32,6 @@ public class GameCommand {
 	public static final short KEYI_WINCHI_3 = 0x35;
 	public static final short KEYI_WINCHI_ACE = 0x36;
 
+	
+	public static final short KEYL_UTC_TIME = 0x40;
 }

@@ -65,8 +65,7 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	@Override
 	public Object getGameDataForViewer() {
-		// TODO Auto-generated method stub
-		return null;
+		return gameLogic.getGameData();
 	}
 
 	@Override
@@ -104,10 +103,7 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	@Override
 	public IPlayMoveResult onPlayMoveHandle(User sender, Message message) {
-		IPlayMoveResult playMoveResult = processRequest(message.getShort(SystemNetworkConstant.KEYR_ACTION_IN_GAME),
-				sender, message);
-		// TODO kiểm tra trạng thái của game
-		return playMoveResult;
+		return processRequest(message.getShort(SystemNetworkConstant.KEYR_ACTION_IN_GAME), sender, message);
 	}
 
 	@Override
