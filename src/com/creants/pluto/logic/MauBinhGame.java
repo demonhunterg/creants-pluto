@@ -40,15 +40,16 @@ public class MauBinhGame {
 	private static final MauBinhConfig gameConfig = MauBinhConfig.getInstance();
 	public STATE gameState;
 	private GameAPI gameApi;
-	private User winner = null;
 	private MoneyManager moneyManager = null;
 	private transient MauBinhCardSet cardSet;
-	private Player[] players;
-	private int limitTime = 90;
-	private int startAfterSeconds = 10;
+	private static final int limitTime = 90;
+	private static final int startAfterSeconds = 10;
+	private static final int showCardSeconds = 10;
 	private Integer countDownSeconds = 0;
-	private long startTime;
+	private long startGameTime;
 	private IRoom room;
+	private int moneyBet;
+	private Player[] players;
 	private Map<String, User> disconnectedUsers;
 
 	// game start sau bao 10s
@@ -65,25 +66,21 @@ public class MauBinhGame {
 		}
 
 		disconnectedUsers = new ConcurrentHashMap<String, User>();
+		Object roomInfo = room.getProperty(NetworkConstant.ROOM_INFO);
+		if (roomInfo != null) {
+			moneyBet = ((RoomInfo) roomInfo).getBetCoin();
+		}
 	}
 
 	public void setGameApi(GameAPI gameApi) {
 		this.gameApi = gameApi;
 	}
 
-	public long getGuaranteeMoney(User user) {
-		return moneyManager.getGuaranteeMoney(user);
-	}
-
-	protected User getWinner() {
-		return winner;
-	}
-
 	public JsonObject getGameData() {
 		if (isPlaying()) {
 			JsonObject gameData = new JsonObject();
 			// lấy thời gian đang đếm còn lại
-			int remainTime = limitTime - (int) ((System.currentTimeMillis() - startTime) / 1000);
+			int remainTime = limitTime - (int) ((System.currentTimeMillis() - startGameTime) / 1000);
 			gameData.addProperty("remain_time", remainTime);
 			gameData.addProperty("game_state", gameState.getValue());
 			return gameData;
@@ -117,7 +114,7 @@ public class MauBinhGame {
 		disconnectedUsers.remove(user.getUserName());
 		int restTime = 0;
 		if (isPlaying()) {
-			restTime = (int) ((limitTime - (System.currentTimeMillis() - startTime)) / 1000L);
+			restTime = (int) ((limitTime - (System.currentTimeMillis() - startGameTime)) / 1000L);
 		}
 
 		if (!isPlaying() || player.getUser() == null) {
@@ -132,12 +129,6 @@ public class MauBinhGame {
 
 	private User getOwner() {
 		return room.getOwner();
-	}
-
-	public long getMoney() {
-		// TODO optimize
-		RoomInfo roomInfo = (RoomInfo) room.getProperty(NetworkConstant.ROOM_INFO);
-		return roomInfo.getBetCoin();
 	}
 
 	private int playerSize() {
@@ -173,7 +164,7 @@ public class MauBinhGame {
 				return;
 			}
 
-			moneyManager = new MoneyManager(getMoney());
+			moneyManager = new MoneyManager(moneyBet);
 			// kiểm tra có chủ phòng và chủ phòng còn tiền không để start game
 			// không
 			if (getOwner() != null && !moneyManager.enoughMoneyToStart(getOwner())) {
@@ -190,7 +181,7 @@ public class MauBinhGame {
 			}
 
 			gameState = STATE.PLAYING;
-			startTime = System.currentTimeMillis();
+			startGameTime = System.currentTimeMillis();
 
 			// xóc bài
 			cardSet.xaoBai();
@@ -201,7 +192,7 @@ public class MauBinhGame {
 			debug(String.format("[DEBUG] Delivery card finish [roomId: %d, roomName: %s]. Start timeout in %d seconds",
 					room.getId(), room.getName(), 91));
 
-			startCountDown(90);
+			startCountDown(limitTime);
 		} catch (Exception e) {
 			Tracer.error(MauBinhGame.class, "[ERROR] startGame fail!", e);
 		}
@@ -244,8 +235,8 @@ public class MauBinhGame {
 				return;
 			}
 
-			if (moneyManager == null || moneyManager.getGameMoney() != getMoney()) {
-				moneyManager = new MoneyManager(getMoney());
+			if (moneyManager == null || moneyManager.getGameMoney() != moneyBet) {
+				moneyManager = new MoneyManager(moneyBet);
 			}
 
 			if (moneyManager.enoughMoneyToStart(user)) {
@@ -329,17 +320,18 @@ public class MauBinhGame {
 
 	protected void join(User user, String pwd) {
 		// trường hợp không đủ tiền
-		if (user.getMoney() < gameConfig.getStartMoneyRate() * Math.max(getMinRoomMoney(), getMoney())) {
+		if (user.getMoney() < gameConfig.getStartMoneyRate() * moneyBet) {
 			gameApi.sendToUser(MessageFactory.makeErrorMessage("NotEnoughMoneyToSet"), user);
 			return;
 		}
 
-		if (moneyManager == null || moneyManager.getGameMoney() != getMoney()) {
-			moneyManager = new MoneyManager(getMoney());
+		if (moneyManager == null || moneyManager.getGameMoney() != moneyBet) {
+			moneyManager = new MoneyManager(moneyBet);
 		}
 
+		// nếu bàn đang chơi thì trả về thêm thời gian chơi còn lại
 		if (isPlaying()) {
-			byte restTime = (byte) ((limitTime - (System.currentTimeMillis() - startTime)) / 1000L);
+			byte restTime = (byte) ((limitTime - (System.currentTimeMillis() - startGameTime)) / 1000L);
 			gameApi.sendToUser(MessageFactory.makeTableInfoMessage((byte) (limitTime / 1000), restTime), user);
 		}
 	}
@@ -453,7 +445,7 @@ public class MauBinhGame {
 				gameApi.sendToUser(MessageFactory.makeInterfaceErrorMessage(GameCommand.ACTION_FINISH,
 						GameCommand.ERROR_IN_GAME_BIN_THUNG, "Binh Thủng"), user);
 
-				int remainTime = limitTime - (int) ((System.currentTimeMillis() - startTime) / 1000);
+				int remainTime = limitTime - (int) ((System.currentTimeMillis() - startGameTime) / 1000);
 				if (remainTime <= 0) {
 					debug(String.format("[DEBUG] [user:%s] Do processBinhFinish! Over time BIN THUNG",
 							user.getUserName()));
@@ -516,7 +508,7 @@ public class MauBinhGame {
 	private void processGameFinish() {
 		gameState = STATE.CALCULATE;
 		stopCountDown();
-		debug(String.format("[DEBUG] calculating........................ in! 5 seconds"));
+		debug(String.format("[DEBUG] calculating........................!"));
 		Result[][] result = GameChecker.comparePlayers(players);
 		int[] winChi = GameChecker.getWinChi(players, result);
 		long[] winMoney = moneyManager.calculateMoney(winChi);
@@ -544,51 +536,17 @@ public class MauBinhGame {
 			}
 		}
 
-		winner = getWinner(winChi);
-
 		// kiểm tra chủ phòng có đủ tiền để start không
 		if (!moneyManager.enoughMoneyToStart(getOwner())) {
 			setMoneyToMin();
 		}
 
-		// show bài trong 5s
-		startCountDown(6);
-	}
-
-	private User getWinner(int[] winChi) {
-		if (winChi == null || winChi.length == 0 || players == null || winChi.length != players.length) {
-			return null;
-		}
-
-		int seatWinner = -1;
-		User ret = null;
-		int maxWinChi = Integer.MIN_VALUE;
-		for (int i = 0; i < players.length; i++) {
-			if (players[i].getUser() != null) {
-
-				if (winChi[i] == maxWinChi) {
-					seatWinner = -1;
-
-				} else if (maxWinChi < winChi[i]) {
-					maxWinChi = winChi[i];
-					seatWinner = i;
-				}
-			}
-		}
-
-		if (seatWinner != -1) {
-			ret = players[seatWinner].getUser();
-		}
-
-		return ret;
+		// show bài trong 10s
+		startCountDown(showCardSeconds);
 	}
 
 	private void setMoneyToMin() {
-		setMoney(getMinRoomMoney());
-	}
-
-	private int getMinRoomMoney() {
-		return 0;
+		setMoney(0);
 	}
 
 	public Player getPlayerByUser(User user) {

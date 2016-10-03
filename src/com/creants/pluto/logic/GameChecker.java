@@ -12,6 +12,8 @@ import com.creants.pluto.util.MauBinhConfig;
  *
  */
 public class GameChecker {
+	private static final MauBinhConfig configs = MauBinhConfig.getInstance();
+
 	/**
 	 * Số chi thắng sắp xếp theo index của người chơi
 	 * 
@@ -42,7 +44,7 @@ public class GameChecker {
 	}
 
 	public static Result[][] comparePlayers(Player[] players) {
-		if ((players == null) || players.length < 2) {
+		if (players == null || players.length < 2) {
 			return null;
 		}
 
@@ -55,35 +57,36 @@ public class GameChecker {
 
 		Result[][] result = new Result[playerNo][playerNo];
 		for (int i = 0; i < playerNo; i++) {
-			if (players[i].getUser() != null) {
-				result[i][i] = new Result();
+			if (players[i].getUser() == null)
+				continue;
 
-				for (int j = i + 1; j < playerNo; j++) {
-					if (players[j].getUser() != null) {
-						result[i][j] = comparePlayers(players[i], players[j]);
-						result[j][i] = result[i][j].getNegative();
+			result[i][i] = new Result();
+			for (int j = i + 1; j < playerNo; j++) {
+				if (players[j].getUser() == null)
+					continue;
 
-						if (result[i][j].isWinThreeSet()) {
-							winThreeSetNo[i] += 1;
-						}
+				result[i][j] = comparePlayers(players[i], players[j]);
+				result[j][i] = result[i][j].getNegative();
 
-						if (result[j][i].isWinThreeSet()) {
-							winThreeSetNo[j] += 1;
-						}
-					}
+				if (result[i][j].isWinThreeSet()) {
+					winThreeSetNo[i] += 1;
+				}
+
+				if (result[j][i].isWinThreeSet()) {
+					winThreeSetNo[j] += 1;
 				}
 			}
 		}
 
 		for (int i = 0; i < playerNo; i++) {
-			if (winThreeSetNo[i] >= 3) {
+			if (winThreeSetNo[i] < 3)
+				continue;
 
-				for (int j = 0; j < playerNo; j++)
-					if (result[i][j] != null && result[j][i] != null) {
-						result[i][j].setMultiK(MauBinhConfig.getInstance().getChiWinAllByThreeSetRate());
-						result[j][i].setMultiK(MauBinhConfig.getInstance().getChiWinAllByThreeSetRate());
-					}
-			}
+			for (int j = 0; j < playerNo; j++)
+				if (result[i][j] != null && result[j][i] != null) {
+					result[i][j].setMultiK(configs.getChiWinAllByThreeSetRate());
+					result[j][i].setMultiK(configs.getChiWinAllByThreeSetRate());
+				}
 		}
 
 		return result;

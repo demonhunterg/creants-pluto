@@ -88,7 +88,7 @@ public class MauBinhCardSet extends CardSet {
 			}
 
 			return cardList;
-		case MauBinhType.SIX_PAIR_WITH_THREE:
+		case MauBinhType.FIVE_PAIR_WITH_THREE:
 			for (int i = 0; i < 6; i++) {
 				cardList.add(CardSet.getCard((byte) (i * 4)));
 				cardList.add(CardSet.getCard((byte) (i * 4 + 1)));

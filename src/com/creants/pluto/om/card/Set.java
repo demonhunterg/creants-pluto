@@ -142,23 +142,23 @@ public class Set {
 
 	public String getName() {
 		switch (getType()) {
-		case 0:
+		case SetType.HIGH_CARD:
 			return MauBinhConfig.getInstance().getNameSetHighCard();
-		case 1:
+		case SetType.ONE_PAIR:
 			return MauBinhConfig.getInstance().getNameSetOnePair();
-		case 2:
+		case SetType.TWO_PAIR:
 			return MauBinhConfig.getInstance().getNameSetTwoPair();
-		case 3:
+		case SetType.THREE_OF_KIND:
 			return MauBinhConfig.getInstance().getNameSetThreeOfKind();
-		case 4:
+		case SetType.STRAIGHT:
 			return MauBinhConfig.getInstance().getNameSetStraight();
-		case 5:
+		case SetType.FLUSH:
 			return MauBinhConfig.getInstance().getNameSetFlush();
-		case 6:
+		case SetType.FULL_HOUSE:
 			return MauBinhConfig.getInstance().getNameSetFullHouse();
-		case 7:
+		case SetType.FOUR_OF_KIND:
 			return MauBinhConfig.getInstance().getNameSetFourOfKind();
-		case 8:
+		case SetType.STRAIGHT_FLUSH:
 			return MauBinhConfig.getInstance().getNameSetStraightFlush();
 		}
 		return MauBinhConfig.getInstance().getNameSetUnknown();
@@ -170,7 +170,7 @@ public class Set {
 
 	protected void setType() {
 		if (cards == null || cards.isEmpty() || !isEnough()) {
-			type = -1;
+			type = SetType.NOT_ENOUGH_CARD;
 			return;
 		}
 
@@ -196,7 +196,7 @@ public class Set {
 					threeNo++;
 					break;
 				case 3:
-					type = 7;
+					type = SetType.FOUR_OF_KIND;
 					return;
 				}
 
@@ -214,73 +214,70 @@ public class Set {
 			threeNo++;
 			break;
 		case 3:
-			type = 7;
+			type = SetType.FOUR_OF_KIND;
 			return;
 		}
 
 		if (threeNo > 0) {
 			if (pairNo > 0) {
-				type = 6;
+				type = SetType.FULL_HOUSE;
 				return;
 			}
 
-			type = 3;
+			type = SetType.THREE_OF_KIND;
 			return;
 		}
 
 		if (pairNo == 2) {
-			type = 2;
-			return;
-		}
-		if (pairNo == 1) {
-			type = 1;
+			type = SetType.TWO_PAIR;
 			return;
 		}
 
-		if (isStraight(cards)) {
+		if (pairNo == 1) {
+			type = SetType.ONE_PAIR;
+			return;
+		}
+
+		if (checkStraight()) {
 			if (isFlush) {
-				type = 8;
+				type = SetType.STRAIGHT_FLUSH;
 				return;
 			}
 
-			type = 4;
+			type = SetType.STRAIGHT;
 			return;
 		}
 
 		if (isFlush) {
-			type = 5;
+			type = SetType.FLUSH;
 			return;
 		}
 
-		type = 0;
+		type = SetType.HIGH_CARD;
 	}
 
-	private boolean isStraight(List<Card> cards) {
+	private boolean checkStraight() {
 		if (cards == null || cards.isEmpty()) {
 			return false;
 		}
 
-		return isNormalStraight(cards) || is2ndStraight(cards);
+		return isNormalStraight() || is2ndStraight();
 	}
 
-	private boolean isNormalStraight(List<Card> cards) {
+	private boolean isNormalStraight() {
+		int firstCardNumber = cards.get(0).getCardNumber();
+		int lastCardNumber = cards.get(cards.size() - 1).getCardNumber();
+		return lastCardNumber - firstCardNumber == cards.size() - 1;
+	}
+
+	private boolean is2ndStraight() {
 		if (cards == null || cards.isEmpty()) {
 			return false;
 		}
 
-		int firstCardNumber = this.cards.get(0).getCardNumber();
-		int lastCardNumber = this.cards.get(this.cards.size() - 1).getCardNumber();
-		return lastCardNumber - firstCardNumber == this.cards.size() - 1;
-	}
-
-	private boolean is2ndStraight(List<Card> cards) {
-		if (cards == null || cards.isEmpty()) {
-			return false;
-		}
-
-		if (MauBinhCardSet.isAce(this.cards.get(this.cards.size() - 1))) {
-			return ((this.cards.size() == 5) && (MauBinhCardSet.is5(this.cards.get(this.cards.size() - 2))))
-					|| ((this.cards.size() == 3) && (MauBinhCardSet.is3(this.cards.get(this.cards.size() - 2))));
+		if (MauBinhCardSet.isAce(cards.get(cards.size() - 1))) {
+			return (cards.size() == 5 && MauBinhCardSet.is5(cards.get(cards.size() - 2)))
+					|| (cards.size() == 3 && MauBinhCardSet.is3(cards.get(cards.size() - 2)));
 		}
 
 		return false;
@@ -288,33 +285,31 @@ public class Set {
 
 	private int compareWithSameType(Set set) {
 		switch (type) {
-		case 0:
+		case SetType.HIGH_CARD:
 			return compareWithHighCard(set);
-		case 1:
+		case SetType.ONE_PAIR:
 			return compareWithOnePair(set);
-		case 2:
+		case SetType.TWO_PAIR:
 			return compareWithTwoPair(set);
-		case 3:
+		case SetType.THREE_OF_KIND:
 			return compareWithThreeOfKind(set);
-		case 4:
+		case SetType.STRAIGHT:
 			return compareWithStright(set);
-		case 5:
+		case SetType.FLUSH:
 			return compareWithFlush(set);
-		case 6:
+		case SetType.FULL_HOUSE:
 			return compareWithFullHouse(set);
-		case 7:
+		case SetType.FOUR_OF_KIND:
 			return compareWithFourOfKind(set);
-		case 8:
+		case SetType.STRAIGHT_FLUSH:
 			return compareWithStraightFlush(set);
 		}
+
 		return Integer.MIN_VALUE;
 	}
 
 	/**
 	 * Mậu thầu (Xét lá bài cao nhất)
-	 * 
-	 * @param set
-	 * @return
 	 */
 	private int compareWithHighCard(Set set) {
 		return GameChecker.compareCardByCard(cards, set.getCards());
@@ -344,6 +339,7 @@ public class Set {
 
 		if (pair01.getCardNumber() > pair02.getCardNumber())
 			return 1;
+
 		if (pair01.getCardNumber() < pair02.getCardNumber()) {
 			return -1;
 		}

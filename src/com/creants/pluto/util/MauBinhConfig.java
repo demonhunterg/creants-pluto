@@ -1,5 +1,10 @@
 package com.creants.pluto.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
+
 import org.apache.log4j.PropertyConfigurator;
 
 /**
@@ -32,26 +37,38 @@ public class MauBinhConfig extends PropertyConfigurator {
 	public static final int XP_DRAW = 2;
 	public static final int XP_LOSE = 1;
 	public static final int XP_LEAVE = 0;
-	private static volatile MauBinhConfig INSTANCE;
+	private static volatile MauBinhConfig instance;
+	private Properties prop = null;
 
 	private MauBinhConfig() {
-		// super(CONFIG_FILE_NAME);
+		try (InputStream input = new FileInputStream(new File(CONFIG_FILE_NAME));) {
+			prop = new Properties();
+			prop.load(input);
+		} catch (Exception e) {
+			return;
+		}
+
 	}
 
 	public static MauBinhConfig getInstance() {
-		if (INSTANCE == null) {
+		if (instance == null) {
 			synchronized (MauBinhConfig.class) {
-				if (INSTANCE == null) {
-					INSTANCE = new MauBinhConfig();
+				if (instance == null) {
+					instance = new MauBinhConfig();
 				}
 			}
 		}
 
-		return INSTANCE;
+		return instance;
 	}
 
 	private int getIntAttribute(String attribute) {
-		return 0;
+		try {
+			return Integer.parseInt(prop.getProperty(attribute));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
 	public int getLimitTimeDefault() {
@@ -75,8 +92,7 @@ public class MauBinhConfig extends PropertyConfigurator {
 	}
 
 	public int getChiLeaveBonus() {
-		// return getIntAttribute("maubinh.ChiLeaveBonus");
-		return 6;
+		return getIntAttribute("maubinh.ChiLeaveBonus");
 	}
 
 	public int getChiWinThreeSetRate() {
@@ -172,7 +188,7 @@ public class MauBinhConfig extends PropertyConfigurator {
 	}
 
 	private String getStringAttribute(String attribute) {
-		return null;
+		return prop.getProperty(attribute);
 	}
 
 	public String getNameFailedArrangement() {

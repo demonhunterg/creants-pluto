@@ -331,7 +331,7 @@ public class Cards {
 			if (cards.isFailedArrangement()) {
 				return new Result();
 			}
-			
+
 			return cards.compareNotMauBinhWithFailed().getNegative();
 		}
 
@@ -406,6 +406,9 @@ public class Cards {
 		return ret;
 	}
 
+	/**
+	 * Nếu 2 thằng cùng tới trắng thì so mậu binh thằng nào lớn hơn
+	 */
 	private Result compareMauBinhWithMauBinh(Cards cards) {
 		Result result = new Result();
 
@@ -414,6 +417,7 @@ public class Cards {
 		} else if (getMauBinhType() > cards.getMauBinhType()) {
 			result.setWinChiMauBinh(getMauBinhWinChi());
 		} else {
+			// TODO nếu huề thì ai làm chủ bàn sẽ win
 			result.setWinChiMauBinh(0);
 		}
 
@@ -499,7 +503,7 @@ public class Cards {
 		// 5 cập (fourNo để kiểm tra xem trong đó có 4 lá giống nhau ko) với 3
 		// lá giống nhau là lục phé bổn
 		if ((pairNo + fourNo * 2) == 5 && threeNo == 1) {
-			maubinhType = MauBinhType.SIX_PAIR_WITH_THREE;
+			maubinhType = MauBinhType.FIVE_PAIR_WITH_THREE;
 			return;
 		}
 
