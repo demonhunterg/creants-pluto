@@ -9,6 +9,7 @@ import com.avengers.netty.gamelib.GameAPI;
 import com.avengers.netty.gamelib.GameInterface;
 import com.avengers.netty.gamelib.result.IPlayMoveResult;
 import com.avengers.netty.gamelib.result.StartGameResult;
+import com.avengers.netty.socket.gate.IMessage;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
 import com.creants.pluto.handler.AutoArrangeRequestHandler;
@@ -17,6 +18,7 @@ import com.creants.pluto.handler.JoinRoomRequestHandler;
 import com.creants.pluto.handler.ReadyRequestHandler;
 import com.creants.pluto.logic.MauBinhGame;
 import com.creants.pluto.logic.MauBinhGame.STATE;
+import com.creants.pluto.logic.TestUnit;
 import com.creants.pluto.util.GameCommand;
 import com.creants.pluto.util.MessageFactory;
 import com.google.gson.JsonObject;
@@ -139,6 +141,11 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 	public IPlayMoveResult timeout() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void test(User user, IMessage message) {
+		gameAPI.sendToUser(TestUnit.getInstanse().comparePlayersTest(message), user);
 	}
 
 }

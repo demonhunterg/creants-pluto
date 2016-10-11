@@ -44,7 +44,7 @@ public class MauBinhGame {
 	private transient MauBinhCardSet cardSet;
 	private static final int limitTime = 90;
 	private static final int startAfterSeconds = 10;
-	private static final int showCardSeconds = 10;
+	private static final int showCardSeconds = 15;
 	private Integer countDownSeconds = 0;
 	private long startGameTime;
 	private IRoom room;

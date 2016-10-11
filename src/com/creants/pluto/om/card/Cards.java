@@ -102,8 +102,11 @@ public class Cards {
 		}
 
 		cards.add(card);
+		// TODO optimize add xong hết rồi mới sort
 		Collections.sort(cards);
 
+		// TODO optimize chia xong hết đủ 13 cây rồi mới thực hiện check mậu
+		// binh
 		if (cards.size() == 13) {
 			setMauBinhType();
 		}
