@@ -16,6 +16,7 @@ public class Player {
 	private boolean isUsedAutoArrangement;
 	private boolean timeOut;
 	private boolean isReady;
+	private boolean isOwner;
 
 	public Player() {
 		reset();
@@ -30,10 +31,19 @@ public class Player {
 		isUsedAutoArrangement = false;
 		timeOut = false;
 		isReady = false;
+		isOwner = false;
 	}
 
 	public int getUserId() {
 		return user.getUserId();
+	}
+
+	public boolean isOwner() {
+		return isOwner;
+	}
+
+	public void setOwner(boolean isOwner) {
+		this.isOwner = isOwner;
 	}
 
 	public Cards getCards() {

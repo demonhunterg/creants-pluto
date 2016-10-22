@@ -157,7 +157,8 @@ public class MauBinhGame {
 
 	public void startGame() {
 		try {
-			debug(String.format("[DEBUG] Game is begin [roomId: %d, roomName: %s]", room.getId(), room.getName()));
+			debug(String.format("[DEBUG] Game is begin [roomId: %d, roomName: %s, owner: %s]", room.getId(),
+					room.getName(), room.getOwner().getUserName()));
 			// TODO kiểm tra trong danh sách disconnect để đá user này ra
 			if (playerSize() < 2) {
 				debug("[DEBUG] Game is begin with a player");
@@ -304,6 +305,24 @@ public class MauBinhGame {
 		int seatNumber = getSeatNumber(user);
 		players[seatNumber].setUser(null);
 		players[seatNumber].reset();
+
+		changeOwner(user);
+	}
+
+	/**
+	 * nếu là chủ bàn thì tìm player thích hợp
+	 * 
+	 * @param quiter
+	 */
+	private void changeOwner(User quiter) {
+		if (!isOwner(quiter))
+			return;
+
+		room.setOwner(room.getListUser().get(0));
+	}
+
+	private boolean isOwner(User user) {
+		return getOwner().getUserId() == user.getUserId();
 	}
 
 	public void setMoney(int value) {
@@ -386,6 +405,10 @@ public class MauBinhGame {
 			User receiver = getUser(i);
 			Player player = players[i];
 			player.setUser(receiver);
+			if (isOwner(receiver)) {
+				player.setOwner(true);
+			}
+
 			if (receiver != null) {
 				Cards cards = player.getCards();
 				Message message = MessageFactory.makeStartMessage(getRoom().getId(), limitTime, cards.list(),
@@ -508,7 +531,7 @@ public class MauBinhGame {
 	private void processGameFinish() {
 		gameState = STATE.CALCULATE;
 		stopCountDown();
-		debug(String.format("[DEBUG] calculating........................!"));
+		debug(String.format("[DEBUG] processGameFinish........................!"));
 		Result[][] result = GameChecker.comparePlayers(players);
 		int[] winChi = GameChecker.getWinChi(players, result);
 		long[] winMoney = moneyManager.calculateMoney(winChi);
@@ -520,19 +543,20 @@ public class MauBinhGame {
 
 		for (int i = 0; i < players.length; i++) {
 			User user = players[i].getUser();
-			if (user != null) {
-				if (winMoney[i] != 0) {
-					gameApi.updateUserMoney(user, winMoney[i], 1, "Cập nhật tiền kết thúc game");
-					debug(String.format("[DEBUG] Do processGameFinish! update money [user: %s, money: %d]",
-							user.getUserName(), winMoney[i]));
-				}
+			if (user == null)
+				continue;
 
-				// gửi thông tin kết quả cho player
-				Message message = MessageFactory.makeResultMessage(i, players, winMoney, winChi, result);
-				if (message != null) {
-					debug("[ERROR] GAME RESULT: " + message.toString());
-					gameApi.sendToUser(message, user);
-				}
+			if (winMoney[i] != 0) {
+				gameApi.updateUserMoney(user, winMoney[i], 1, "Cập nhật tiền kết thúc game");
+				debug(String.format("[DEBUG] Do processGameFinish! update money [user: %s, money: %d]",
+						user.getUserName(), winMoney[i]));
+			}
+
+			// gửi thông tin kết quả cho player
+			Message message = MessageFactory.makeResultMessage(i, players, winMoney, winChi, result);
+			if (message != null) {
+				debug("[ERROR] GAME RESULT: " + message.toString());
+				gameApi.sendToUser(message, user);
 			}
 		}
 
@@ -540,6 +564,8 @@ public class MauBinhGame {
 		if (!moneyManager.enoughMoneyToStart(getOwner())) {
 			setMoneyToMin();
 		}
+
+		// TODO kiểm tra user có đủ tiền để chơi hay không
 
 		// show bài trong 10s
 		startCountDown(showCardSeconds);

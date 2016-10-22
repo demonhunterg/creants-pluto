@@ -100,12 +100,37 @@ public class Result {
 	}
 
 	/**
+	 * Có chi nào hòa hay không
+	 * 
+	 * @return
+	 */
+	public boolean haveDickens() {
+		return winChi01 == 0 || winChi02 == 0 || winChi03 == 0;
+	}
+
+	/**
+	 * Đối với chủ bàn khi hòa thì xử thắng
+	 * 
+	 * @param value
+	 */
+	public void incrementIfOwnerDickens(int value) {
+		if (winChi01 == 0)
+			winChi01 += value;
+
+		if (winChi02 == 0)
+			winChi02 += value;
+
+		if (winChi03 == 0)
+			winChi03 += value;
+	}
+
+	/**
 	 * Thắng 3 chi
 	 * 
 	 * @return <code>TRUE</code> thắng cả 3 chi
 	 */
 	public boolean isWinThreeSet() {
-		return ((getMultiK() == MauBinhConfig.getInstance().getChiWinThreeSetRate())
-				|| (getMultiK() == MauBinhConfig.getInstance().getChiWinAllByThreeSetRate())) && (getWinChi01() > 0);
+		return (getMultiK() == MauBinhConfig.getInstance().getChiWinThreeSetRate()
+				|| getMultiK() == MauBinhConfig.getInstance().getChiWinAllByThreeSetRate()) && getWinChi01() > 0;
 	}
 }

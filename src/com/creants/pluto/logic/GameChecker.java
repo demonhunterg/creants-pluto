@@ -49,7 +49,6 @@ public class GameChecker {
 		}
 
 		int playerNo = players.length;
-
 		int[] winThreeSetNo = new int[playerNo];
 		for (int i = 0; i < playerNo; i++) {
 			winThreeSetNo[i] = 0;
@@ -82,6 +81,7 @@ public class GameChecker {
 			if (winThreeSetNo[i] < 3)
 				continue;
 
+			// sụp làng, sụp hầm
 			for (int j = 0; j < playerNo; j++)
 				if (result[i][j] != null && result[j][i] != null) {
 					result[i][j].setMultiK(configs.getChiWinAllByThreeSetRate());
@@ -197,7 +197,15 @@ public class GameChecker {
 			return null;
 		}
 
-		return player01.getCards().compareWith(player02.getCards());
+		Result result = player01.getCards().compareWith(player02.getCards());
+		// nếu hòa thì cho chủ bàn thắng
+		if (result.haveDickens()) {
+			if (player01.isOwner() || player02.isOwner()) {
+				result.incrementIfOwnerDickens(player01.isOwner() ? 1 : -1);
+			}
+		}
+
+		return result;
 	}
 
 	/**
