@@ -10,6 +10,7 @@ import com.avengers.netty.core.util.Tracer;
 import com.avengers.netty.gamelib.key.NetworkConstant;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
+import com.creants.pluto.logic.MauBinhGame;
 import com.creants.pluto.om.MauBinhType;
 import com.creants.pluto.om.Player;
 import com.creants.pluto.om.Result;
@@ -174,6 +175,100 @@ public class MessageFactory {
 		gameResult.addProperty("winchi_3", winChi3);
 		gameResult.addProperty("winchi_ace", winchiAce);
 		gameResult.addProperty("start_after", 15);
+
+		gameResult.add("player_list", ja);
+		message.putString(SystemNetworkConstant.KEYS_JSON_DATA, gameResult.toString());
+
+		return message;
+	}
+
+	public static Message makeTestResultMessage(int playerIndex, Player[] players, long[] winMoney, int[] winChi,
+			Result[][] result) {
+		Player player = players[playerIndex];
+		if (players == null || winChi == null || result == null || playerIndex < 0 || playerIndex >= players.length
+				|| player.getUser() == null) {
+			return null;
+		}
+
+		Message message = createMauBinhMessage(GameCommand.ACTION_END_GAME);
+		JsonObject gameResult = new JsonObject();
+		JsonObject playerResult = new JsonObject();
+		playerResult.addProperty("user_id", player.getUser().getUserId());
+		playerResult.addProperty("position", playerIndex);
+		playerResult.addProperty("full_name", player.getUser().getUserName());
+		playerResult.addProperty("money", winMoney[playerIndex]);
+		playerResult.addProperty("winchi_no", winChi[playerIndex]);
+
+		Cards cards = players[playerIndex].getCards();
+		List<Card> cardList = cards.getArrangeCards();
+		if (cardList == null) {
+			cardList = cards.list();
+		}
+
+		byte[] cardIds = new byte[cardList.size()];
+		for (int j = 0; j < cardList.size(); j++) {
+			cardIds[j] = cardList.get(j).getId();
+		}
+
+		byte type = cards.isFailedArrangement() ? MauBinhType.BINH_LUNG : cards.getMauBinhType();
+		playerResult.addProperty("mau_binh_type", type);
+		playerResult.addProperty("card_list", GsonUtils.toGsonString(cardIds));
+
+		int winChiMauBinh = 0, winChi1 = 0, winChi2 = 0, winChi3 = 0;
+		JsonArray ja = new JsonArray();
+		try {
+			User user = null;
+			JsonObject jo = null;
+			for (int i = 0; i < players.length; i++) {
+				user = players[i].getUser();
+				if (i != playerIndex && user != null) {
+					jo = new JsonObject();
+					jo.addProperty("user_id", user.getUserId());
+					jo.addProperty("position", i);
+					jo.addProperty("full_name", user.getUserName());
+					jo.addProperty("money", winMoney[i]);
+					jo.addProperty("winchi_no", winChi[i]);
+					cards = players[i].getCards();
+					type = cards.isFailedArrangement() ? MauBinhType.BINH_LUNG : cards.getMauBinhType();
+					jo.addProperty("mau_binh_type", type);
+
+					cardList = cards.getArrangeCards();
+					if (cardList == null) {
+						cardList = cards.list();
+					}
+
+					cardIds = new byte[cardList.size()];
+					for (int j = 0; j < cardList.size(); j++) {
+						cardIds[j] = cardList.get(j).getId();
+					}
+
+					int winChiMauBinh2 = result[playerIndex][i].getWinChiMauBinh();
+					winChiMauBinh += winChiMauBinh2;
+					int winChi01 = result[playerIndex][i].getWinChi01();
+					winChi1 += winChi01;
+					int winChi02 = result[playerIndex][i].getWinChi02();
+					winChi2 += winChi02;
+					int winChi03 = result[playerIndex][i].getWinChi03();
+					winChi3 += winChi03;
+
+					jo.addProperty("card_list", GsonUtils.toGsonString(cardIds));
+					jo.addProperty("winchi_maubinh", -winChiMauBinh2);
+					jo.addProperty("winchi_1", -winChi01);
+					jo.addProperty("winchi_2", -winChi02);
+					jo.addProperty("winchi_3", -winChi03);
+					ja.add(jo);
+				}
+			}
+		} catch (Exception e) {
+			Tracer.errorRoom(MessageFactory.class, "[ERROR] makeResultMessage fail!", e);
+		}
+
+		playerResult.addProperty("winchi_maubinh", winChiMauBinh);
+		playerResult.addProperty("winchi_1", winChi1);
+		playerResult.addProperty("winchi_2", winChi2);
+		playerResult.addProperty("winchi_3", winChi3);
+		ja.add(playerResult);
+		gameResult.addProperty("start_after", MauBinhGame.showCardSeconds);
 
 		gameResult.add("player_list", ja);
 		message.putString(SystemNetworkConstant.KEYS_JSON_DATA, gameResult.toString());

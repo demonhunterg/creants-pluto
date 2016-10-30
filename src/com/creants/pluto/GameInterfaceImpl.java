@@ -14,7 +14,6 @@ import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
 import com.creants.pluto.handler.AutoArrangeRequestHandler;
 import com.creants.pluto.handler.FinishRequestHandler;
-import com.creants.pluto.handler.JoinRoomRequestHandler;
 import com.creants.pluto.handler.ReadyRequestHandler;
 import com.creants.pluto.logic.MauBinhGame;
 import com.creants.pluto.logic.MauBinhGame.STATE;
@@ -49,7 +48,6 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	@Override
 	public void initRequestHandler() {
-		addRequestHandler(SystemNetworkConstant.COMMAND_USER_JOIN_ROOM, new JoinRoomRequestHandler());
 		addRequestHandler(GameCommand.ACTION_AUTO_ARRANGE, new AutoArrangeRequestHandler());
 		addRequestHandler(GameCommand.ACTION_FINISH, new FinishRequestHandler());
 		addRequestHandler(GameCommand.ACTION_READY, new ReadyRequestHandler());
@@ -94,8 +92,11 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	@Override
 	public void joinRoom(User user, IRoom room) {
-		// TODO Auto-generated method stub
+		IRoom lastJoinedRoom = user.getLastJoinedRoom();
+		Tracer.debugRoom(this.getClass(), String.format("[DEBUG] [user: %s] do join room [roomId:%d, roomName:%s]",
+				user.getUserName(), lastJoinedRoom.getId(), lastJoinedRoom.getName()));
 
+		gameLogic.startWaitingPlayer();
 	}
 
 	@Override

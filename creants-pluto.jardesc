@@ -12,7 +12,7 @@
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
         <javaElement handleIdentifier="=creants-pluto/src"/>
-        <file path="/creants-pluto/.classpath"/>
         <file path="/creants-pluto/.project"/>
+        <file path="/creants-pluto/.classpath"/>
     </selectedElements>
 </jardesc>

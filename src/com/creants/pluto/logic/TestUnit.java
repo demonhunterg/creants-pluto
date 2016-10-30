@@ -75,7 +75,7 @@ public class TestUnit {
 				if (players[i].getUser() == null)
 					continue;
 
-				Message message = MessageFactory.makeResultMessage(i, players, winMoney, winChi, result);
+				Message message = MessageFactory.makeTestResultMessage(i, players, winMoney, winChi, result);
 				if (message != null) {
 					System.out.println("[ERROR] GAME RESULT: " + message.toString());
 				}

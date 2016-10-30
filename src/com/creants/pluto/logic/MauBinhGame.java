@@ -22,7 +22,6 @@ import com.avengers.netty.gamelib.key.NetworkConstant;
 import com.avengers.netty.gamelib.om.RoomInfo;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
-import com.creants.pluto.handler.JoinRoomRequestHandler;
 import com.creants.pluto.om.Player;
 import com.creants.pluto.om.Result;
 import com.creants.pluto.om.card.Card;
@@ -44,8 +43,9 @@ public class MauBinhGame {
 	private transient MauBinhCardSet cardSet;
 	private static final int limitTime = 90;
 	private static final int startAfterSeconds = 10;
-	private static final int showCardSeconds = 15;
+	public static final int showCardSeconds = 15;
 	private Integer countDownSeconds = 0;
+	
 	private long startGameTime;
 	private IRoom room;
 	private int moneyBet;
@@ -553,7 +553,7 @@ public class MauBinhGame {
 			}
 
 			// gửi thông tin kết quả cho player
-			Message message = MessageFactory.makeResultMessage(i, players, winMoney, winChi, result);
+			Message message = MessageFactory.makeTestResultMessage(i, players, winMoney, winChi, result);
 			if (message != null) {
 				debug("[ERROR] GAME RESULT: " + message.toString());
 				gameApi.sendToUser(message, user);
@@ -679,7 +679,7 @@ public class MauBinhGame {
 		// đếm cho ván tiếp theo
 		startCountDown(getStartAfterSeconds());
 
-		Tracer.debugPlutoGame(JoinRoomRequestHandler.class,
+		Tracer.debugPlutoGame(this.getClass(),
 				String.format("[IN_GAME] [DEBUG] waiting user join game in %d seconds", getStartAfterSeconds()));
 
 		Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_START_AFTER_COUNTDOWN);
