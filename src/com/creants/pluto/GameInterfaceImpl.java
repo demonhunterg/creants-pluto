@@ -134,13 +134,11 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	@Override
 	public void startCountdownStartGame(long timeout) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public IPlayMoveResult timeout() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

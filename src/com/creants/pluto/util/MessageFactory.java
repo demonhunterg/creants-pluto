@@ -385,8 +385,26 @@ public class MessageFactory {
 		return message;
 	}
 
-	public static Message makeErrorMessage(String errorMessage) {
+	/**
+	 * Tạo message lỗi.<br>
+	 * Khi nào sử dụng createErrorMessage?<br>
+	 * Khi client cần bắt những lỗi chung chung để hiện dialog.<br>
+	 * Đối với các lỗi logic trong game thì nên trả về mã code lỗi theo command
+	 * mà client request để client xử lý theo logic.
+	 * 
+	 * @param code
+	 *            mã code lỗi
+	 * @param errorMessage
+	 *            thông tin lỗi
+	 */
+	public static Message createErrorMessage(short serviceId, short code, String errorMessage) {
 		Message message = new Message();
+		message.setCommandId(SystemNetworkConstant.COMMAND_ERROR);
+		message.setProtocolVersion(PROTOCOL_VERSION);
+
+		message.putShort(SystemNetworkConstant.KEYR_COMMAND_ID, serviceId);
+		message.putShort(SystemNetworkConstant.KEYR_ERROR, code);
+		message.putString(SystemNetworkConstant.KEYS_MESSAGE, errorMessage);
 		return message;
 	}
 

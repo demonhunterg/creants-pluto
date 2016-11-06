@@ -13,10 +13,10 @@ import com.creants.pluto.om.card.CardSet;
  *
  */
 public class MauBinhCardSet extends CardSet {
-	public static final int NUMBER_ACE = 12;
-	public static final int NUMBER_FIVE = 3;
-	public static final int NUMBER_THREE = 1;
-	public static final int NUMBER_TWO = 0;
+	public static final int NUMBER_ACE = 13;
+	public static final int NUMBER_FIVE = 4;
+	public static final int NUMBER_THREE = 2;
+	public static final int NUMBER_TWO = 1;
 	public static final int TYPE_HEART = 3;
 	public static final int TYPE_DIAMOND = 2;
 	public static final int TYPE_CLUB = 1;
@@ -26,7 +26,7 @@ public class MauBinhCardSet extends CardSet {
 	 * Con xì
 	 */
 	public static boolean isAce(Card card) {
-		return card.getCardNumber() == 12;
+		return card.getCardNumber() == NUMBER_ACE;
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class MauBinhCardSet extends CardSet {
 	 * Con 5
 	 */
 	public static boolean is5(Card card) {
-		return card.getCardNumber() == 3;
+		return card.getCardNumber() == NUMBER_FIVE;
 	}
 
 	/**

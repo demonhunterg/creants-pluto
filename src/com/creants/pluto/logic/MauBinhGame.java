@@ -45,7 +45,7 @@ public class MauBinhGame {
 	private static final int startAfterSeconds = 10;
 	public static final int showCardSeconds = 15;
 	private Integer countDownSeconds = 0;
-	
+
 	private long startGameTime;
 	private IRoom room;
 	private int moneyBet;
@@ -169,7 +169,8 @@ public class MauBinhGame {
 			// kiểm tra có chủ phòng và chủ phòng còn tiền không để start game
 			// không
 			if (getOwner() != null && !moneyManager.enoughMoneyToStart(getOwner())) {
-				gameApi.sendToUser(MessageFactory.makeErrorMessage("Khong du tien"), getOwner());
+				gameApi.sendToUser(MessageFactory.createErrorMessage(SystemNetworkConstant.KEYR_ACTION_IN_GAME,
+						(short) 1000, "Bạn không đủ tiền"), getOwner());
 				for (int i = 0; i < playerSize(); i++) {
 					User user = players[i].getUser();
 					if (user != null && !user.equals(getOwner())) {
@@ -245,7 +246,8 @@ public class MauBinhGame {
 				Player player = players[nSeat];
 				player.setReady(true);
 			} else {
-				gameApi.sendToUser(MessageFactory.makeErrorMessage("Bạn không đủ tiền"), user);
+				gameApi.sendToUser(MessageFactory.createErrorMessage(SystemNetworkConstant.KEYR_ACTION_IN_GAME,
+						(short) 1000, "Bạn không đủ tiền"), user);
 			}
 		} catch (Exception ex) {
 			debug("[ERROR] playerReady fail!", ex);
@@ -333,14 +335,16 @@ public class MauBinhGame {
 		if (getOwner().getMoney() >= gameConfig.getStartMoneyRate() * value) {
 			moneyManager = new MoneyManager(value);
 		} else {
-			gameApi.sendToUser(MessageFactory.makeErrorMessage("Khong du tien"), getOwner());
+			gameApi.sendToUser(MessageFactory.createErrorMessage(SystemNetworkConstant.KEYR_ACTION_IN_GAME,
+					(short) 1000, "Bạn không đủ tiền"), getOwner());
 		}
 	}
 
 	protected void join(User user, String pwd) {
 		// trường hợp không đủ tiền
 		if (user.getMoney() < gameConfig.getStartMoneyRate() * moneyBet) {
-			gameApi.sendToUser(MessageFactory.makeErrorMessage("NotEnoughMoneyToSet"), user);
+			gameApi.sendToUser(MessageFactory.createErrorMessage(SystemNetworkConstant.KEYR_ACTION_IN_GAME,
+					(short) 1000, "Bạn không đủ tiền"), user);
 			return;
 		}
 
@@ -646,6 +650,24 @@ public class MauBinhGame {
 									Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_QUIT_GAME);
 									message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getUserId());
 									gameApi.sendAllInRoomExceptUser(message, user);
+								}
+							}
+							// đá player hết tiền
+							for (int i = 0; i < players.length; i++) {
+								Player player = players[i];
+								User user = player.getUser();
+								if (user != null && user.getMoney() < moneyBet) {
+									debug("[DEBUG] kickout player:" + user.getUserName());
+									room.removeUser(user);
+									Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_QUIT_GAME);
+									message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getUserId());
+									gameApi.sendAllInRoomExceptUser(message, user);
+
+									// báo user đó đã hết tiền
+									gameApi.sendToUser(
+											MessageFactory.createErrorMessage(SystemNetworkConstant.KEYR_ACTION_IN_GAME,
+													(short) 1000, "Bạn không đủ tiền"),
+											user);
 								}
 							}
 

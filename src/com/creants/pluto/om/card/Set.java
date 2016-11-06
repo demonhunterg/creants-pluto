@@ -270,6 +270,10 @@ public class Set {
 		return lastCardNumber - firstCardNumber == cards.size() - 1;
 	}
 
+	/**
+	 * Kiểu sảnh thứ 2 bắt đầu là con ách
+	 * @return
+	 */
 	private boolean is2ndStraight() {
 		if (cards == null || cards.isEmpty()) {
 			return false;

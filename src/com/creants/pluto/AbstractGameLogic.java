@@ -53,10 +53,8 @@ public abstract class AbstractGameLogic {
 	 * @return
 	 */
 	public IPlayMoveResult processRequest(short requestId, User user, Message message) {
-		System.out.println("[ERROR] ****************************** TRONG GAME NE: " + requestId);
 		AbstractRequestHandler requestHandler = handlers.get(requestId);
 		if (requestHandler == null) {
-			// TODO Log
 			return null;
 		}
 
