@@ -37,6 +37,13 @@ public class MauBinhConfig extends PropertyConfigurator {
 	public static final int XP_DRAW = 2;
 	public static final int XP_LOSE = 1;
 	public static final int XP_LEAVE = 0;
+	
+	public static final int limitTime = 90;
+	public static final int startAfterSeconds = 10;
+	public static final int showCardSeconds = 15;
+	
+	
+	
 	private static volatile MauBinhConfig instance;
 	private Properties prop = null;
 

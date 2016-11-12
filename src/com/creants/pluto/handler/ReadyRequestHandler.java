@@ -17,11 +17,11 @@ public class ReadyRequestHandler extends AbstractRequestHandler {
 	public void handleRequest(User user, Message message) {
 		Player player = gameLogic.getPlayerByUser(user);
 		if (player != null && player.getUser() != null) {
-			Tracer.debug(ReadyRequestHandler.class, "[FATAL] user ready: " + user.getUserName());
+			Tracer.debug(ReadyRequestHandler.class, "[DEBUG] [" + user.getUserName() + "] is ready.");
 			player.setReady(true);
 			gameApi.sendToUser(MessageFactory.createMauBinhMessage(GameCommand.ACTION_READY), user);
 		} else {
-			// TODO log
+			Tracer.error(ReadyRequestHandler.class, "[ERROR] [" + user.getUserName() + "] is not player. ");
 		}
 	}
 

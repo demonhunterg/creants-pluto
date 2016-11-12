@@ -215,22 +215,10 @@ public class GameChecker {
 	 * @return <code>TRUE</code> đã xếp xong
 	 */
 	public static boolean isFinishAll(Player[] players) {
-		System.out.println("----------------------> Check finish ");
 		if (players == null) {
 			return true;
 		}
 
-		// TODO xoa sau khi test
-		StringBuilder bd = new StringBuilder();
-
-		for (int i = 0; i < players.length; i++) {
-			Player player = players[i];
-			if (player.getUser() != null) {
-				bd.append(player.getUser().getUserName() + "/" + player.isFinish() + " , ");
-			}
-		}
-
-		System.out.println("********* DANH SACH: " + bd.toString());
 		for (int i = 0; i < players.length; i++) {
 			Player player = players[i];
 			if (player.getUser() != null) {

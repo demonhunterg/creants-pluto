@@ -10,7 +10,6 @@ import com.avengers.netty.core.util.Tracer;
 import com.avengers.netty.gamelib.key.NetworkConstant;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
-import com.creants.pluto.logic.MauBinhGame;
 import com.creants.pluto.om.MauBinhType;
 import com.creants.pluto.om.Player;
 import com.creants.pluto.om.Result;
@@ -33,7 +32,7 @@ public class MessageFactory {
 		return message;
 	}
 
-	public static Message makeStartMessage(int roomId, int limitTime, List<Card> cards, byte maubinhType) {
+	public static Message makeStartMessage(int roomId, int limitTime, List<Card> cards) {
 		Message message = createMauBinhMessage(GameCommand.ACTION_START_GAME);
 		try {
 			message.putInt(SystemNetworkConstant.KEYI_ROOM_ID, roomId);
@@ -268,7 +267,7 @@ public class MessageFactory {
 		playerResult.addProperty("winchi_2", winChi2);
 		playerResult.addProperty("winchi_3", winChi3);
 		ja.add(playerResult);
-		gameResult.addProperty("start_after", MauBinhGame.showCardSeconds);
+		gameResult.addProperty("start_after", MauBinhConfig.showCardSeconds);
 
 		gameResult.add("player_list", ja);
 		message.putString(SystemNetworkConstant.KEYS_JSON_DATA, gameResult.toString());

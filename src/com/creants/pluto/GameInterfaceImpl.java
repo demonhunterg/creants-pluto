@@ -16,7 +16,6 @@ import com.creants.pluto.handler.AutoArrangeRequestHandler;
 import com.creants.pluto.handler.FinishRequestHandler;
 import com.creants.pluto.handler.ReadyRequestHandler;
 import com.creants.pluto.logic.MauBinhGame;
-import com.creants.pluto.logic.MauBinhGame.STATE;
 import com.creants.pluto.logic.TestUnit;
 import com.creants.pluto.util.GameCommand;
 import com.creants.pluto.util.MessageFactory;
@@ -37,8 +36,7 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	@Override
 	public MauBinhGame createGameLogic(IRoom room) {
-		gameLogic = new MauBinhGame(room);
-		return gameLogic;
+		return gameLogic = new MauBinhGame(room);
 	}
 
 	@Override
@@ -76,7 +74,7 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 						room.getName(), totalUsers));
 
 		// trường hợp thoát ra còn một người chơi duy nhất thì không đếm
-		if (totalUsers < 2 && gameLogic.gameState == STATE.NOT_START) {
+		if (totalUsers < 2 && gameLogic.isWaitingPlayer()) {
 			gameLogic.stopCountDown();
 			Tracer.debugPlutoGame(GameInterfaceImpl.class,
 					String.format("[DEBUG] [IN_GAME] room [%s] stop countdown", room.getName()));
@@ -91,12 +89,8 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 	}
 
 	@Override
-	public void joinRoom(User user, IRoom room) {
-		IRoom lastJoinedRoom = user.getLastJoinedRoom();
-		Tracer.debugRoom(this.getClass(), String.format("[DEBUG] [user: %s] do join room [roomId:%d, roomName:%s]",
-				user.getUserName(), lastJoinedRoom.getId(), lastJoinedRoom.getName()));
-
-		gameLogic.startWaitingPlayer();
+	public boolean joinRoom(User user, IRoom room) {
+		return gameLogic.join(user);
 	}
 
 	@Override
