@@ -12,6 +12,8 @@ public class GameCommand {
 	public static final byte ACTION_END_GAME = 59;
 	public static final byte ACTION_QUIT_GAME = 60;
 	public static final byte ACTION_READY = 61;
+	public static final byte ACTION_RECONNECT= 62;
+	public static final byte ACTION_DISCONNECT= 63;
 
 	public static final short INTERFACE_ERROR = 1;
 	public static final short SET_LIMIT_TIME = 10;

@@ -36,6 +36,14 @@ public class Cards {
 		return cards;
 	}
 
+	public byte[] getCardIdArray() {
+		byte[] cardIds = new byte[cards.size()];
+		for (int i = 0; i < cards.size(); i++) {
+			cardIds[i] = cards.get(i).getId();
+		}
+		return cardIds;
+	}
+
 	public void setCards(List<Card> listcards) {
 		if (listcards.size() != 13) {
 			return;

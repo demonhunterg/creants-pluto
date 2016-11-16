@@ -28,6 +28,7 @@ import com.creants.pluto.om.Result;
 import com.creants.pluto.om.card.Card;
 import com.creants.pluto.om.card.Cards;
 import com.creants.pluto.util.GameCommand;
+import com.creants.pluto.util.GsonUtils;
 import com.creants.pluto.util.MauBinhConfig;
 import com.creants.pluto.util.MessageFactory;
 import com.google.gson.JsonArray;
@@ -49,7 +50,7 @@ public class MauBinhGame {
 	private IRoom room;
 	private int moneyBet;
 	private Player[] players;
-	private Map<String, User> disconnectedUsers;
+	private Map<Integer, User> disconnectedUsers;
 
 	private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private ScheduledFuture<?> countdownSchedule;
@@ -63,7 +64,7 @@ public class MauBinhGame {
 			players[i] = new Player();
 		}
 
-		disconnectedUsers = new ConcurrentHashMap<String, User>();
+		disconnectedUsers = new ConcurrentHashMap<Integer, User>();
 		Object roomInfo = room.getProperty(NetworkConstant.ROOM_INFO);
 		if (roomInfo != null) {
 			moneyBet = ((RoomInfo) roomInfo).getBetCoin();
@@ -86,9 +87,16 @@ public class MauBinhGame {
 	}
 
 	public boolean join(User user) {
-		// kiểm tra có phải reconnect không
-		if (isPlaying()) {
-
+		// nếu là reconnect
+		if (disconnectedUsers.containsKey(user.getCreantUserId())) {
+			// báo cho player khác user
+			Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_RECONNECT);
+			message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getCreantUserId());
+			gameApi.sendAllInRoomExceptUser(message, user);
+			// trả về data cho joiner
+			gameApi.sendToUser(buildRoomInfo(user, isPlaying()), user);
+			disconnectedUsers.remove(user.getCreantUserId());
+			return true;
 		}
 
 		// TODO check theo số tiền thua tối đa
@@ -98,13 +106,14 @@ public class MauBinhGame {
 		}
 
 		List<User> players = room.getPlayersList();
-		gameApi.sendResponseForListUser(buildRoomInfo(user), players);
+		gameApi.sendResponseForListUser(buildRoomInfo(user, false), players);
 
 		IRoom lastJoinedRoom = user.getLastJoinedRoom();
 		Tracer.debugRoom(this.getClass(), String.format("[DEBUG] [user: %s] do join room [roomId:%d, roomName:%s]",
 				user.getUserName(), lastJoinedRoom.getId(), lastJoinedRoom.getName()));
 
 		startWaitingPlayer();
+
 		return true;
 	}
 
@@ -170,7 +179,12 @@ public class MauBinhGame {
 	 * @param user
 	 */
 	public void disconnect(User user) {
-		disconnectedUsers.put(user.getUserName(), user);
+		// báo cho các player khác user này bị disconnect
+		Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_DISCONNECT);
+		message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getCreantUserId());
+		gameApi.sendAllInRoomExceptUser(message, user);
+
+		disconnectedUsers.put(user.getCreantUserId(), user);
 	}
 
 	private User getOwner() {
@@ -265,10 +279,21 @@ public class MauBinhGame {
 	private int getSeatNumber(User user) {
 		for (int i = 0; i < players.length; i++) {
 			Player player = players[i];
-			if (player.getUser() != null && player.getUserId() == user.getUserId())
+			if (player.getUser() != null && player.getCreantUserId() == user.getCreantUserId())
 				return i;
 		}
 
+		return -1;
+	}
+
+	private int getAvailableSeat() {
+		for (int i = 0; i < players.length; i++) {
+			if (players[i].getUser() != null) {
+				continue;
+			}
+
+			return i;
+		}
 		return -1;
 	}
 
@@ -452,7 +477,7 @@ public class MauBinhGame {
 				cards.setMauBinhTypeAfterArrangement();
 				// Báo cho các player khác người chơi này đã bin xong
 				if (!player.isTimeOut()) {
-					gameApi.sendAllInRoom(MessageFactory.makeFinishMessage(user.getUserId()));
+					gameApi.sendAllInRoom(MessageFactory.makeFinishMessage(user.getCreantUserId()));
 				}
 
 				player.setFinishFlag(true);
@@ -619,27 +644,22 @@ public class MauBinhGame {
 							stopCountDown();
 							// đá player bị mất kết nối
 							processUserDisconnect();
-							// đá player chưa sẵn sàn cho ván kế
-							for (int i = 0; i < players.length; i++) {
-								Player player = players[i];
-								User user = player.getUser();
-								if (user != null && !player.isReady()) {
-									debug("[DEBUG] kickout player not ready!" + user.getUserName());
-									room.removeUser(user);
-									Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_QUIT_GAME);
-									message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getUserId());
-									gameApi.sendAllInRoomExceptUser(message, user);
-								}
-							}
+
 							// đá player hết tiền
 							for (int i = 0; i < players.length; i++) {
 								User user = players[i].getUser();
 								if (user != null && user.getMoney() < moneyBet) {
 									// báo user đó đã hết tiền
-									System.out.println(
-											"[ERROR] " + user.getUserName() + " Đá khi hết tiền! Not enough money. "
-													+ user.getMoney() + "/bet:" + moneyBet);
+									debug("[DEBUG] " + user.getUserName() + " Đá khi hết tiền! Not enough money. "
+											+ user.getMoney() + "/bet:" + moneyBet);
+
 									notifyNotEnoughMoney(user);
+									gameApi.leaveRoom(user.getUserId());
+								}
+
+								// đá player chưa sẵn sàn cho ván kế
+								if (user != null && !players[i].isReady()) {
+									debug("[DEBUG] kickout player not ready!" + user.getUserName());
 									gameApi.leaveRoom(user.getUserId());
 								}
 							}
@@ -675,7 +695,7 @@ public class MauBinhGame {
 		gameApi.sendAllInRoom(message);
 	}
 
-	private Message buildRoomInfo(User joiner) {
+	private Message buildRoomInfo(User joiner, boolean reconnect) {
 		JsonObject jsonData = new JsonObject();
 
 		// put room info
@@ -703,7 +723,7 @@ public class MauBinhGame {
 					playerList.add(buildPlayerInfo(obj, user));
 				}
 			}
-
+			
 			jsonData.add("player_list", playerList);
 		}
 
@@ -712,6 +732,10 @@ public class MauBinhGame {
 			gameData.addProperty("remain_time", getRemainTime());
 			gameData.addProperty("game_state", gameState.getValue());
 			jsonData.add("game_data", gameData);
+			if (reconnect) {
+				Player player = getPlayerByUser(joiner);
+				jsonData.addProperty("card_list", GsonUtils.toGsonString(player.getCards().getCardIdArray()));
+			}
 		}
 
 		// put game data, danh sách bài, thời gian còn lại của bàn chơi
@@ -730,9 +754,11 @@ public class MauBinhGame {
 	}
 
 	private JsonObject buildPlayerInfo(JsonObject obj, User user) {
+		int seatNumber = getSeatNumber(user);
+		seatNumber = seatNumber >= 0 ? seatNumber : getAvailableSeat();
 		obj = new JsonObject();
-		obj.addProperty("player_id", user.getUserId());
-		obj.addProperty("user_id", user.getPlayerId());
+		obj.addProperty("position", seatNumber);
+		obj.addProperty("user_id", user.getCreantUserId());
 		obj.addProperty("user_name", user.getUserName());
 		obj.addProperty("avatar", user.getAvatar());
 		obj.addProperty("money", user.getMoney());
@@ -747,13 +773,12 @@ public class MauBinhGame {
 		if (disconnectedUsers.size() > 0) {
 			Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_QUIT_GAME);
 			User user = null;
-			for (String username : disconnectedUsers.keySet()) {
-				user = disconnectedUsers.get(username);
-				debug(String.format("[DEBUG] process disconnect for [user: %s, user_id: %d]", username,
-						user.getUserId()));
-				message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getUserId());
+			for (Integer creantUserId : disconnectedUsers.keySet()) {
+				user = disconnectedUsers.get(creantUserId);
+				debug(String.format("[DEBUG] process disconnect for [user: %s]", user.toString()));
+				message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getCreantUserId());
 				gameApi.sendAllInRoomExceptUser(message, user);
-				disconnectedUsers.remove(username);
+				disconnectedUsers.remove(creantUserId);
 			}
 		}
 

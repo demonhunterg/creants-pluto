@@ -272,6 +272,7 @@ public class Set {
 
 	/**
 	 * Kiểu sảnh thứ 2 bắt đầu là con ách
+	 * 
 	 * @return
 	 */
 	private boolean is2ndStraight() {
@@ -298,7 +299,7 @@ public class Set {
 		case SetType.THREE_OF_KIND:
 			return compareWithThreeOfKind(set);
 		case SetType.STRAIGHT:
-			return compareWithStright(set);
+			return compareWithStraight(set);
 		case SetType.FLUSH:
 			return compareWithFlush(set);
 		case SetType.FULL_HOUSE:
@@ -393,7 +394,10 @@ public class Set {
 		return 0;
 	}
 
-	private int compareWithStright(Set set) {
+	private int compareWithStraight(Set set) {
+		if (set.isA2345())
+			return 1;
+
 		return GameChecker.compare2HighestCards(getCards(), set.getCards());
 	}
 
@@ -415,6 +419,10 @@ public class Set {
 			return -1;
 		}
 		return 0;
+	}
+
+	private boolean isA2345() {
+		return MauBinhCardSet.isAce(cards.get(cardNumber - 1)) && MauBinhCardSet.is5(cards.get(cardNumber - 2));
 	}
 
 	private int compareWithFourOfKind(Set set) {

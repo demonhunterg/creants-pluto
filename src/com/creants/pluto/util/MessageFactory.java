@@ -192,7 +192,7 @@ public class MessageFactory {
 		Message message = createMauBinhMessage(GameCommand.ACTION_END_GAME);
 		JsonObject gameResult = new JsonObject();
 		JsonObject playerResult = new JsonObject();
-		playerResult.addProperty("user_id", player.getUser().getUserId());
+		playerResult.addProperty("user_id", player.getUser().getCreantUserId());
 		playerResult.addProperty("position", playerIndex);
 		playerResult.addProperty("full_name", player.getUser().getUserName());
 		playerResult.addProperty("money", winMoney[playerIndex]);
@@ -222,7 +222,7 @@ public class MessageFactory {
 				user = players[i].getUser();
 				if (i != playerIndex && user != null) {
 					jo = new JsonObject();
-					jo.addProperty("user_id", user.getUserId());
+					jo.addProperty("user_id", user.getCreantUserId());
 					jo.addProperty("position", i);
 					jo.addProperty("full_name", user.getUserName());
 					jo.addProperty("money", winMoney[i]);

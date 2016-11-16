@@ -41,7 +41,7 @@ public class GameCheckerTest {
 		user1.setUserId(1);
 		user1.setUserName("usertest1");
 		players[0].setUser(user1);
-		List<Card> deliveryCard1 = deliveryCard(new int[] { 36,43,46,23,24,25,28,51,3,4,9,15,48 });
+		List<Card> deliveryCard1 = deliveryCard(new int[] {16,26,30,3,6,10,15,50,19,21,24,28,33});
 		players[0].getCards().setCards(deliveryCard1);
 		setFinish(players[0], deliveryCard1);
 		logCard(players[0].getCards().list());
@@ -51,7 +51,7 @@ public class GameCheckerTest {
 		user2.setUserId(2);
 		user2.setUserName("bot1");
 		players[1].setUser(user2);
-		List<Card> deliveryCard2 = deliveryCard(new int[] { 35,42,49,8,12,20,22,29,5,6,7,16,18 });
+		List<Card> deliveryCard2 = deliveryCard(new int[] { 35,42,49,1,2,5,11,18,4,12,20,40,44});
 		players[1].getCards().setCards(deliveryCard2);
 		setFinish(players[1], deliveryCard2);
 		logCard(players[1].getCards().list());

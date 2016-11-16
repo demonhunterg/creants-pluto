@@ -15,6 +15,11 @@ public class ReadyRequestHandler extends AbstractRequestHandler {
 
 	@Override
 	public void handleRequest(User user, Message message) {
+		if (user.getMoney() <= 1000) {
+			gameApi.leaveRoom(user.getUserId());
+			return;
+		}
+
 		Player player = gameLogic.getPlayerByUser(user);
 		if (player != null && player.getUser() != null) {
 			Tracer.debug(ReadyRequestHandler.class, "[DEBUG] [" + user.getUserName() + "] is ready.");

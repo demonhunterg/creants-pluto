@@ -17,6 +17,7 @@ public class Player {
 	private boolean timeOut;
 	private boolean isReady;
 	private boolean isOwner;
+	private int position = -1;
 
 	public Player() {
 		reset();
@@ -34,8 +35,8 @@ public class Player {
 		isOwner = false;
 	}
 
-	public int getUserId() {
-		return user.getUserId();
+	public int getCreantUserId() {
+		return user.getCreantUserId();
 	}
 
 	public boolean isOwner() {
@@ -52,6 +53,14 @@ public class Player {
 
 	public User getUser() {
 		return user;
+	}
+
+	public int getPosition() {
+		return position;
+	}
+
+	public void setPosition(int position) {
+		this.position = position;
 	}
 
 	public void setUser(User user) {

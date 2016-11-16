@@ -82,7 +82,7 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 		// báo người chơi còn lại user đó leave
 		Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_QUIT_GAME);
-		message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getUserId());
+		message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getCreantUserId());
 		gameAPI.sendAllInRoomExceptUser(message, user);
 
 		gameLogic.leave(user);

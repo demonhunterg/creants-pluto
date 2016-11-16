@@ -21,7 +21,7 @@ public class FinishRequestHandler extends AbstractRequestHandler {
 	public void handleRequest(User user, Message message) {
 		byte[] blob = message.getBlob(NetworkConstant.KEYBLOB_CARD_LIST);
 		Tracer.debugPlutoGame(FinishRequestHandler.class, String
-				.format("[DEBUG] Arrange Finished [username:%s] [cards: %s]", user.getUserName(), Arrays.asList(blob)));
+				.format("[DEBUG] Arrange Finished [username:%s] [cards: %s]", user.getUserName(), Arrays.toString(blob)));
 
 		List<Card> listCards = new ArrayList<Card>(13);
 		for (int i = 0; i < 13; i++) {

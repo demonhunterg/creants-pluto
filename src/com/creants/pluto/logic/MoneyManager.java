@@ -191,10 +191,6 @@ public class MoneyManager {
 		int value = 0;
 		try {
 			value = (int) Math.min(leaver.getMoney(), MauBinhConfig.getInstance().getChiLeaveBonus() * gameMoney);
-
-			// TODO update tiền lý do người chơi rời phòng
-			// controller.updateMoney(user, -value*playerNo, description);
-
 			for (int i = 0; i < players.length; i++) {
 				User user = players[i].getUser();
 				if (user != null) {
