@@ -16,8 +16,8 @@ import org.joda.time.DateTimeZone;
 
 import com.avengers.netty.core.event.SystemNetworkConstant;
 import com.avengers.netty.core.om.IRoom;
+import com.avengers.netty.core.util.CoreTracer;
 import com.avengers.netty.core.util.DefaultMessageFactory;
-import com.avengers.netty.core.util.Tracer;
 import com.avengers.netty.gamelib.GameAPI;
 import com.avengers.netty.gamelib.key.NetworkConstant;
 import com.avengers.netty.gamelib.om.RoomInfo;
@@ -39,36 +39,35 @@ import com.google.gson.JsonObject;
  *
  */
 public class MauBinhGame {
-	private static final MauBinhConfig gameConfig = MauBinhConfig.getInstance();
 	public STATE gameState;
 	private GameAPI gameApi;
-	private MoneyManager moneyManager = null;
-	private transient MauBinhCardSet cardSet;
+	private MoneyManager moneyManager;
+	private MauBinhCardSet cardSet;
 	private Integer countDownSeconds = 0;
 
 	private long startGameTime;
 	private IRoom room;
-	private int moneyBet;
 	private Player[] players;
 	private Map<Integer, User> disconnectedUsers;
 
-	private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 	private ScheduledFuture<?> countdownSchedule;
 
 	public MauBinhGame(IRoom room) {
-		gameState = STATE.NOT_START;
 		this.room = room;
+		gameState = STATE.NOT_START;
+
 		cardSet = new MauBinhCardSet();
-		players = new Player[4];
-		for (int i = 0; i < players.length; i++) {
-			players[i] = new Player();
-		}
+		players = new Player[] { new Player(), new Player(), new Player(), new Player() };
 
 		disconnectedUsers = new ConcurrentHashMap<Integer, User>();
 		Object roomInfo = room.getProperty(NetworkConstant.ROOM_INFO);
+		int moneyBet = 0;
 		if (roomInfo != null) {
 			moneyBet = ((RoomInfo) roomInfo).getBetCoin();
 		}
+
+		moneyManager = new MoneyManager(moneyBet);
 	}
 
 	public void setGameApi(GameAPI gameApi) {
@@ -100,20 +99,17 @@ public class MauBinhGame {
 		}
 
 		// TODO check theo số tiền thua tối đa
-		boolean checkEnoughMoney = user.getMoney() * gameConfig.getStartMoneyRate() >= moneyBet;
-		if (!checkEnoughMoney) {
+		if (!moneyManager.checkEnoughMoney(user)) {
 			return false;
 		}
 
-		List<User> players = room.getPlayersList();
-		gameApi.sendResponseForListUser(buildRoomInfo(user, false), players);
+		gameApi.sendResponseForListUser(buildRoomInfo(user, false), room.getPlayersList());
 
 		IRoom lastJoinedRoom = user.getLastJoinedRoom();
-		Tracer.debugRoom(this.getClass(), String.format("[DEBUG] [user: %s] do join room [roomId:%d, roomName:%s]",
+		CoreTracer.debug(this.getClass(), String.format("[DEBUG] [user: %s] do join room [roomId:%d, roomName:%s]",
 				user.getUserName(), lastJoinedRoom.getId(), lastJoinedRoom.getName()));
 
 		startWaitingPlayer();
-
 		return true;
 	}
 
@@ -157,11 +153,6 @@ public class MauBinhGame {
 		changeOwner(user);
 	}
 
-	/**
-	 * nếu là chủ bàn thì tìm player thích hợp
-	 * 
-	 * @param quiter
-	 */
 	private void changeOwner(User quiter) {
 		if (!isOwner(quiter))
 			return;
@@ -197,7 +188,6 @@ public class MauBinhGame {
 
 	private void startCountDown(int startAfterSeconds) {
 		countDownSeconds = startAfterSeconds;
-
 		if (countdownSchedule == null || countdownSchedule.isCancelled()) {
 			countDown();
 			return;
@@ -208,7 +198,7 @@ public class MauBinhGame {
 	}
 
 	private void debug(Object... msgs) {
-		Tracer.debugPlutoGame(MauBinhGame.class, msgs);
+		CoreTracer.debug(MauBinhGame.class, msgs);
 	}
 
 	private void startGame() {
@@ -218,24 +208,6 @@ public class MauBinhGame {
 			// TODO kiểm tra trong danh sách disconnect để đá user này ra
 			if (playerSize() < 2) {
 				debug("[DEBUG] Game is begin with a player");
-				return;
-			}
-
-			moneyManager = new MoneyManager(moneyBet);
-			// kiểm tra có chủ phòng và chủ phòng còn tiền không để start game
-			// không
-			if (getOwner() != null && !moneyManager.enoughMoneyToStart(getOwner())) {
-				debug(String.format("[DEBUG] startGame fail! [user: %s] not enough money", getOwner().getUserName()));
-				notifyNotEnoughMoney(getOwner());
-				System.out.println("[ERROR] startGame! Not enough money.");
-				notifyNotEnoughMoney(getOwner());
-				for (int i = 0; i < playerSize(); i++) {
-					User user = players[i].getUser();
-					if (user != null && !user.equals(getOwner())) {
-						playerReady(user, false);
-					}
-				}
-
 				return;
 			}
 
@@ -253,7 +225,7 @@ public class MauBinhGame {
 
 			startCountDown(MauBinhConfig.limitTime);
 		} catch (Exception e) {
-			Tracer.error(MauBinhGame.class, "[ERROR] startGame fail!", e);
+			CoreTracer.error(MauBinhGame.class, "[ERROR] startGame fail!", e);
 		}
 	}
 
@@ -272,7 +244,7 @@ public class MauBinhGame {
 			// gameApi.sendAllInRoom(MessageFactory.makeStopMessage());
 		} catch (Exception e) {
 			debug(String.format("[ERROR] [room:%s] Do stopGame fail!", room.getName()), e);
-			Tracer.error(MauBinhGame.class, "[ERROR] stopGame fail!", e);
+			CoreTracer.error(MauBinhGame.class, "[ERROR] stopGame fail!", e);
 		}
 	}
 
@@ -294,6 +266,7 @@ public class MauBinhGame {
 
 			return i;
 		}
+
 		return -1;
 	}
 
@@ -310,14 +283,9 @@ public class MauBinhGame {
 				return;
 			}
 
-			if (moneyManager == null || moneyManager.getGameMoney() != moneyBet) {
-				moneyManager = new MoneyManager(moneyBet);
-			}
-
-			if (moneyManager.enoughMoneyToStart(user)) {
+			if (moneyManager.checkEnoughMoney(user)) {
 				debug("[DEBUG] [user:%s] playerReady!", user.getUserName());
-				Player player = players[nSeat];
-				player.setReady(true);
+				players[nSeat].setReady(true);
 			} else {
 				System.out.println("[ERROR] playerReady! Not enough money.");
 				notifyNotEnoughMoney(user);
@@ -343,26 +311,13 @@ public class MauBinhGame {
 		return count;
 	}
 
-	public void setMoney(int value) {
-		if (getOwner() == null) {
-			return;
-		}
-
-		if (getOwner().getMoney() >= gameConfig.getStartMoneyRate() * value) {
-			moneyManager = new MoneyManager(value);
-		} else {
-			System.out.println("[ERROR] setMoney! Not enough money.");
-			notifyNotEnoughMoney(getOwner());
-		}
-	}
-
 	/**
 	 * Kiểm tra game có thể hoàn thành không. Tất cả player đã finish chưa.
 	 * 
 	 * @return
 	 */
 	private boolean canBeFinish() {
-		if (players == null || players.length == 0) {
+		if (players.length == 0) {
 			return false;
 		}
 
@@ -398,16 +353,18 @@ public class MauBinhGame {
 
 		for (int i = 0; i < playerSize(); i++) {
 			User receiver = getUser(i);
+			if (receiver == null)
+				continue;
+
 			Player player = players[i];
 			player.setUser(receiver);
 			if (isOwner(receiver)) {
 				player.setOwner(true);
 			}
 
-			if (receiver != null) {
-				gameApi.sendToUser(MessageFactory.makeStartMessage(room.getId(), MauBinhConfig.limitTime,
-						player.getCards().list()), receiver);
-			}
+			gameApi.sendToUser(
+					MessageFactory.makeStartMessage(room.getId(), MauBinhConfig.limitTime, player.getCardList()),
+					receiver);
 		}
 
 		// trường hợp đang chia bài mà người chơi bấm tự động bin hết
@@ -487,7 +444,7 @@ public class MauBinhGame {
 			}
 		} catch (Exception e) {
 			debug(String.format("[ERROR] [user:%s] Do processBinhFinish fail!", user.getUserName()), e);
-			Tracer.error(MauBinhGame.class, "[ERROR] Do processBinhFinish fail!", e);
+			CoreTracer.error(MauBinhGame.class, "[ERROR] Do processBinhFinish fail!", e);
 			gameApi.sendToUser(MessageFactory.makeInterfaceErrorMessage(GameCommand.ACTION_FINISH,
 					GameCommand.ERROR_IN_GAME_MISS_CARD, "Lỗi kết thúc game"), user);
 		}
@@ -503,7 +460,7 @@ public class MauBinhGame {
 	public List<Card> processAutoArrangeCommand(Player player) {
 		List<Card> result = new ArrayList<Card>();
 		try {
-			result = AutoArrangement.getSolution(player.getCards().list());
+			result = AutoArrangement.getSolution(player.getCardList());
 			debug(String.format("[DEBUG] Auto Arrange [username:%s] cards:\n %s", player.getUser().getUserName(),
 					logCard(result)));
 
@@ -514,7 +471,7 @@ public class MauBinhGame {
 
 			player.setAutoArrangementFlag(true);
 		} catch (Exception e) {
-			Tracer.error(MauBinhGame.class, "[ERROR] processAutoArrangeCommand fail!", e);
+			CoreTracer.error(MauBinhGame.class, "[ERROR] processAutoArrangeCommand fail!", e);
 		}
 
 		return result;
@@ -575,11 +532,6 @@ public class MauBinhGame {
 			}
 		}
 
-		// kiểm tra chủ phòng có đủ tiền để start không
-		if (!moneyManager.enoughMoneyToStart(getOwner())) {
-			setMoney(0);
-		}
-
 		// show bài trong 10s
 		startCountDown(MauBinhConfig.showCardSeconds);
 	}
@@ -597,7 +549,7 @@ public class MauBinhGame {
 		try {
 			return ResourceBundle.getBundle(className, locale).getString(property);
 		} catch (Exception e) {
-			Tracer.error(MauBinhGame.class, "[ERROR] getMessage fail!",
+			CoreTracer.error(MauBinhGame.class, "[ERROR] getMessage fail!",
 					"className:" + className + ", property:" + property + ", locale:" + locale + "}", e);
 		}
 		return null;
@@ -642,16 +594,15 @@ public class MauBinhGame {
 						if (gameState == STATE.CALCULATE) {
 							gameState = STATE.FINISH;
 							stopCountDown();
-							// đá player bị mất kết nối
 							processUserDisconnect();
 
 							// đá player hết tiền
 							for (int i = 0; i < players.length; i++) {
 								User user = players[i].getUser();
-								if (user != null && user.getMoney() < moneyBet) {
+								if (user != null && !moneyManager.checkEnoughMoney(user)) {
 									// báo user đó đã hết tiền
 									debug("[DEBUG] " + user.getUserName() + " Đá khi hết tiền! Not enough money. "
-											+ user.getMoney() + "/bet:" + moneyBet);
+											+ user.getMoney() + "/bet:" + moneyManager.getGameMoney());
 
 									notifyNotEnoughMoney(user);
 									gameApi.leaveRoom(user.getUserId());
@@ -686,7 +637,7 @@ public class MauBinhGame {
 		// đếm cho ván tiếp theo
 		startCountDown(MauBinhConfig.startAfterSeconds);
 
-		Tracer.debugPlutoGame(this.getClass(), String.format("[IN_GAME] [DEBUG] waiting user join game in %d seconds",
+		CoreTracer.debug(this.getClass(), String.format("[IN_GAME] [DEBUG] waiting user join game in %d seconds",
 				MauBinhConfig.startAfterSeconds));
 
 		Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_START_AFTER_COUNTDOWN);
@@ -723,7 +674,7 @@ public class MauBinhGame {
 					playerList.add(buildPlayerInfo(obj, user));
 				}
 			}
-			
+
 			jsonData.add("player_list", playerList);
 		}
 

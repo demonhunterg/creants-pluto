@@ -6,7 +6,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import com.avengers.netty.core.event.SystemNetworkConstant;
-import com.avengers.netty.core.util.Tracer;
+import com.avengers.netty.core.util.CoreTracer;
 import com.avengers.netty.gamelib.key.NetworkConstant;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
@@ -46,7 +46,7 @@ public class MessageFactory {
 
 			message.putBytes(NetworkConstant.KEYBLOB_CARD_LIST, cardIds);
 		} catch (Exception e) {
-			Tracer.error(MessageFactory.class, "[ERROR] makeStartMessage fail!", e);
+			CoreTracer.error(MessageFactory.class, "[ERROR] makeStartMessage fail!", e);
 		}
 
 		return message;
@@ -62,7 +62,7 @@ public class MessageFactory {
 			// m.dos.writeByte(limitTime);
 			// m.dos.writeByte(type);
 		} catch (Exception e) {
-			Tracer.error(MessageFactory.class, "[ERROR] makeSetLimitTimeMessage fail!", e);
+			CoreTracer.error(MessageFactory.class, "[ERROR] makeSetLimitTimeMessage fail!", e);
 		}
 
 		return m;
@@ -74,7 +74,7 @@ public class MessageFactory {
 			// m.dos.writeByte(limitTime);
 			// m.dos.writeByte(restTime);
 		} catch (Exception e) {
-			Tracer.error(MessageFactory.class, "[ERROR] makeTableInfoMessage fail!", e);
+			CoreTracer.error(MessageFactory.class, "[ERROR] makeTableInfoMessage fail!", e);
 		}
 
 		return m;
@@ -85,7 +85,7 @@ public class MessageFactory {
 		try {
 			message.putInt(SystemNetworkConstant.KEYI_USER_ID, userID);
 		} catch (Exception e) {
-			Tracer.error(MessageFactory.class, "[ERROR] makeFinishMessage fail!", e);
+			CoreTracer.error(MessageFactory.class, "[ERROR] makeFinishMessage fail!", e);
 		}
 
 		return message;
@@ -165,7 +165,7 @@ public class MessageFactory {
 				}
 			}
 		} catch (Exception e) {
-			Tracer.errorRoom(MessageFactory.class, "[ERROR] makeResultMessage fail!", e);
+			CoreTracer.error(MessageFactory.class, "[ERROR] makeResultMessage fail!", e);
 		}
 
 		gameResult.addProperty("winchi_maubinh", winChiMauBinh);
@@ -259,7 +259,7 @@ public class MessageFactory {
 				}
 			}
 		} catch (Exception e) {
-			Tracer.errorRoom(MessageFactory.class, "[ERROR] makeResultMessage fail!", e);
+			CoreTracer.error(MessageFactory.class, "[ERROR] makeResultMessage fail!", e);
 		}
 
 		playerResult.addProperty("winchi_maubinh", winChiMauBinh);
@@ -347,7 +347,7 @@ public class MessageFactory {
 			message.putBytes(NetworkConstant.KEYBLOB_CARD_LIST, cardIds);
 			message.putLong(GameCommand.KEYL_UTC_TIME, DateTime.now().toDateTime(DateTimeZone.UTC).getMillis());
 		} catch (Exception e) {
-			Tracer.error(MessageFactory.class, "[ERROR] makeAutoArrangeResultMessage fail!", e);
+			CoreTracer.error(MessageFactory.class, "[ERROR] makeAutoArrangeResultMessage fail!", e);
 		}
 
 		return message;
@@ -363,7 +363,7 @@ public class MessageFactory {
 
 			message.putBytes(NetworkConstant.KEYBLOB_CARD_LIST, cardIds);
 		} catch (Exception e) {
-			Tracer.error(MessageFactory.class, "[ERROR] makeSortByOrderMessage fail!", e);
+			CoreTracer.error(MessageFactory.class, "[ERROR] makeSortByOrderMessage fail!", e);
 		}
 
 		return message;
@@ -378,7 +378,7 @@ public class MessageFactory {
 			}
 			message.putBytes(NetworkConstant.KEYBLOB_CARD_LIST, cardIds);
 		} catch (Exception e) {
-			Tracer.error(MessageFactory.class, "[ERROR] makeSortByTypeMessage fail!", e);
+			CoreTracer.error(MessageFactory.class, "[ERROR] makeSortByTypeMessage fail!", e);
 		}
 
 		return message;
@@ -424,7 +424,7 @@ public class MessageFactory {
 			// m.dos.writeByte(restTime);
 			// m.dos.writeByte(maubinhType);
 		} catch (Exception e) {
-			Tracer.error(MessageFactory.class, "[ERROR] makeInGameInforMessage fail!", e);
+			CoreTracer.error(MessageFactory.class, "[ERROR] makeInGameInforMessage fail!", e);
 		}
 
 		return m;

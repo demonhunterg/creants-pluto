@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.avengers.netty.core.event.SystemNetworkConstant;
 import com.avengers.netty.core.om.IRoom;
-import com.avengers.netty.core.util.Tracer;
+import com.avengers.netty.core.util.CoreTracer;
 import com.avengers.netty.gamelib.GameAPI;
 import com.avengers.netty.gamelib.GameInterface;
 import com.avengers.netty.gamelib.result.IPlayMoveResult;
@@ -31,7 +31,7 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	public GameInterfaceImpl(IRoom room) {
 		super(room);
-		Tracer.info(GameInterfaceImpl.class, "- Innit PLUTO");
+		CoreTracer.info(GameInterfaceImpl.class, "- Innit PLUTO");
 	}
 
 	@Override
@@ -69,14 +69,14 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 	@Override
 	public void leaveRoom(User user, IRoom room) {
 		int totalUsers = room.countPlayer();
-		Tracer.debugPlutoGame(GameInterfaceImpl.class,
+		CoreTracer.debug(this.getClass(),
 				String.format("[DEBUG] [IN_GAME] [user:%s] leave room [%s], [countPlayer: %d] ", user.getUserName(),
 						room.getName(), totalUsers));
 
 		// trường hợp thoát ra còn một người chơi duy nhất thì không đếm
 		if (totalUsers < 2 && gameLogic.isWaitingPlayer()) {
 			gameLogic.stopCountDown();
-			Tracer.debugPlutoGame(GameInterfaceImpl.class,
+			CoreTracer.debug(GameInterfaceImpl.class,
 					String.format("[DEBUG] [IN_GAME] room [%s] stop countdown", room.getName()));
 		}
 

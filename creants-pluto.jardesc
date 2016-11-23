@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <jardesc>
-    <jar path="netty-core/extensions/creants-pluto.jar"/>
+    <jar path="creants-core/extensions/creants-pluto.jar"/>
     <options buildIfNeeded="true" compress="true" descriptionLocation="/creants-pluto/creants-pluto.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>

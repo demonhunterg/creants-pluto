@@ -1,6 +1,9 @@
 package com.creants.pluto.om;
 
+import java.util.List;
+
 import com.avengers.netty.socket.gate.wood.User;
+import com.creants.pluto.om.card.Card;
 import com.creants.pluto.om.card.Cards;
 
 /**
@@ -49,6 +52,10 @@ public class Player {
 
 	public Cards getCards() {
 		return cards;
+	}
+
+	public List<Card> getCardList() {
+		return cards.list();
 	}
 
 	public User getUser() {

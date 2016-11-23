@@ -1,6 +1,6 @@
 package com.creants.pluto;
 
-import com.avengers.netty.core.util.Tracer;
+import com.avengers.netty.core.util.CoreTracer;
 import com.avengers.netty.gamelib.GameExtension;
 import com.avengers.netty.gamelib.GameInterface;
 
@@ -11,7 +11,7 @@ import com.avengers.netty.gamelib.GameInterface;
 public class PlutoExtension extends GameExtension {
 
 	public PlutoExtension() {
-		Tracer.info(PlutoExtension.class, "=================== LOADING PLUTO EXTENSION ===================");
+		CoreTracer.info(PlutoExtension.class, "=================== LOADING PLUTO EXTENSION ===================");
 	}
 
 	@Override

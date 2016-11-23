@@ -1,6 +1,6 @@
 package com.creants.pluto.handler;
 
-import com.avengers.netty.core.util.Tracer;
+import com.avengers.netty.core.util.CoreTracer;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
 import com.creants.pluto.om.Player;
@@ -22,11 +22,11 @@ public class ReadyRequestHandler extends AbstractRequestHandler {
 
 		Player player = gameLogic.getPlayerByUser(user);
 		if (player != null && player.getUser() != null) {
-			Tracer.debug(ReadyRequestHandler.class, "[DEBUG] [" + user.getUserName() + "] is ready.");
+			CoreTracer.debug(ReadyRequestHandler.class, "[DEBUG] [" + user.getUserName() + "] is ready.");
 			player.setReady(true);
 			gameApi.sendToUser(MessageFactory.createMauBinhMessage(GameCommand.ACTION_READY), user);
 		} else {
-			Tracer.error(ReadyRequestHandler.class, "[ERROR] [" + user.getUserName() + "] is not player. ");
+			CoreTracer.error(ReadyRequestHandler.class, "[ERROR] [" + user.getUserName() + "] is not player. ");
 		}
 	}
 
