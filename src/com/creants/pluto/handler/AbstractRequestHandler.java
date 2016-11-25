@@ -13,9 +13,6 @@ public abstract class AbstractRequestHandler {
 	protected MauBinhGame gameLogic;
 	protected GameAPI gameApi;
 
-	// TODO TIMEOUT SCHEDULER test
-	public static final long TIMEOUT_MILLIS = 60 * 1000;
-
 	public void setGameLogic(MauBinhGame gameLogic) {
 		this.gameLogic = gameLogic;
 	}
