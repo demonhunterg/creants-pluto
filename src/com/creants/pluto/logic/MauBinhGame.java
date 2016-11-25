@@ -86,8 +86,12 @@ public class MauBinhGame {
 	}
 
 	public boolean join(User user) {
-		// nếu là reconnect
+		// TODO move ra impl nếu là reconnect
 		if (disconnectedUsers.containsKey(user.getCreantUserId())) {
+			CoreTracer.debug(MauBinhGame.class, "User reconnect: " + user.getUserName());
+			User disconnectUser = disconnectedUsers.get(user.getCreantUserId());
+			Player playerByUser = getPlayerByUser(disconnectUser);
+			playerByUser.setUser(user);
 			// báo cho player khác user
 			Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_RECONNECT);
 			message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getCreantUserId());
@@ -170,6 +174,7 @@ public class MauBinhGame {
 	 * @param user
 	 */
 	public void disconnect(User user) {
+		CoreTracer.debug(this.getClass(), "User disconnect: " + user.getUserName());
 		// báo cho các player khác user này bị disconnect
 		Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_DISCONNECT);
 		message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getCreantUserId());
@@ -457,12 +462,12 @@ public class MauBinhGame {
 	 * @param player
 	 * @return
 	 */
-	public List<Card> processAutoArrangeCommand(Player player) {
+	public List<Card> processAutoArrangeCommand(User user) {
 		List<Card> result = new ArrayList<Card>();
 		try {
+			Player player = getPlayerByUser(user);
 			result = AutoArrangement.getSolution(player.getCardList());
-			debug(String.format("[DEBUG] Auto Arrange [username:%s] cards:\n %s", player.getUser().getUserName(),
-					logCard(result)));
+			debug(String.format("[DEBUG] Auto Arrange [username:%s] cards:\n %s", user.getUserName(), logCard(result)));
 
 			if (!player.isTimeOut()) {
 				Message m = MessageFactory.makeAutoArrangeResultMessage(result);
