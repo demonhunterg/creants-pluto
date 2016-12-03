@@ -1,14 +1,11 @@
 package com.creants.pluto;
 
-import java.util.List;
-
 import com.avengers.netty.core.event.SystemNetworkConstant;
 import com.avengers.netty.core.om.IRoom;
 import com.avengers.netty.core.util.CoreTracer;
 import com.avengers.netty.gamelib.GameAPI;
 import com.avengers.netty.gamelib.GameInterface;
 import com.avengers.netty.gamelib.result.IPlayMoveResult;
-import com.avengers.netty.gamelib.result.StartGameResult;
 import com.avengers.netty.socket.gate.IMessage;
 import com.avengers.netty.socket.gate.wood.Message;
 import com.avengers.netty.socket.gate.wood.User;
@@ -90,7 +87,12 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	@Override
 	public boolean joinRoom(User user, IRoom room) {
-		return gameLogic.join(user);
+		return gameLogic.join(user, room);
+	}
+
+	@Override
+	public boolean reconnect(User user) {
+		return gameLogic.reconnect(user);
 	}
 
 	@Override
@@ -104,12 +106,6 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 	}
 
 	@Override
-	public StartGameResult onStartGame(User owner, List<User> listPlayer, Message extraData) {
-		// TODO Trường hợp chủ động start
-		return null;
-	}
-
-	@Override
 	public void setApi(GameAPI gameApi) {
 		this.gameAPI = gameApi;
 		// TODO refactor
@@ -120,20 +116,6 @@ public class GameInterfaceImpl extends AbstractGameLogic implements GameInterfac
 
 	public GameAPI getGameAPI() {
 		return gameAPI;
-	}
-
-	@Override
-	public void setDealer(long userId) {
-	}
-
-	@Override
-	public void startCountdownStartGame(long timeout) {
-
-	}
-
-	@Override
-	public IPlayMoveResult timeout() {
-		return null;
 	}
 
 	@Override

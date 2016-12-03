@@ -85,23 +85,30 @@ public class MauBinhGame {
 		return null;
 	}
 
-	public boolean join(User user) {
-		// TODO move ra impl nếu là reconnect
-		if (disconnectedUsers.containsKey(user.getCreantUserId())) {
-			CoreTracer.debug(MauBinhGame.class, "User reconnect: " + user.getUserName());
-			User disconnectUser = disconnectedUsers.get(user.getCreantUserId());
-			Player playerByUser = getPlayerByUser(disconnectUser);
-			playerByUser.setUser(user);
-			// báo cho player khác user
-			Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_RECONNECT);
-			message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getCreantUserId());
-			gameApi.sendAllInRoomExceptUser(message, user);
-			// trả về data cho joiner
-			gameApi.sendToUser(buildRoomInfo(user, isPlaying()), user);
-			disconnectedUsers.remove(user.getCreantUserId());
-			return true;
-		}
+	public boolean reconnect(User user) {
+		if (!disconnectedUsers.containsKey(user.getCreantUserId()))
+			return false;
 
+		if (!isPlaying())
+			return false;
+
+		User disconnectUser = disconnectedUsers.get(user.getCreantUserId());
+		user.setUserId(disconnectUser.getUserId());
+		user.setLastJoinedRoom(room);
+		CoreTracer.debug(MauBinhGame.class, "User reconnect: " + user.getUserName());
+		Player playerByUser = getPlayerByUser(disconnectUser);
+		playerByUser.setUser(user);
+		// báo cho player khác user
+		Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_RECONNECT);
+		message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getCreantUserId());
+		gameApi.sendAllInRoomExceptUser(message, user);
+		// trả về data cho joiner
+		gameApi.sendToUser(buildRoomInfo(user, isPlaying()), user);
+		disconnectedUsers.remove(user.getCreantUserId());
+		return true;
+	}
+
+	public boolean join(User user, IRoom room) {
 		// TODO check theo số tiền thua tối đa
 		if (!moneyManager.checkEnoughMoney(user)) {
 			return false;
