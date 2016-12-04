@@ -248,6 +248,7 @@ public class Cards {
 		if (isMauBinh()) {
 			return getMauBinhName();
 		}
+
 		return String.format("%s-%s-%s",
 				new Object[] { get1stSet().getName(), get2ndSet().getName(), get3rdSet().getName() });
 	}
@@ -259,21 +260,21 @@ public class Cards {
 	 */
 	public String getMauBinhName() {
 		switch (getMauBinhType()) {
-		case 0:
+		case MauBinhType.SIX_PAIR:
 			return MauBinhConfig.getInstance().getNameMauBinhSixPair();
-		case 1:
+		case MauBinhType.THREE_STRAIGHT:
 			return MauBinhConfig.getInstance().getNameMauBinhThreeStraight();
-		case 2:
+		case MauBinhType.THREE_FLUSH:
 			return MauBinhConfig.getInstance().getNameMauBinhThreeFlush();
-		case 3:
+		case MauBinhType.SAME_COLOR_12:
 			return MauBinhConfig.getInstance().getNameMauBinhSameColor12();
-		case 4:
+		case MauBinhType.FIVE_PAIR_WITH_THREE:
 			return MauBinhConfig.getInstance().getNameMauBinhSixPairWithThree();
-		case 5:
+		case MauBinhType.STRAIGHT_13:
 			return MauBinhConfig.getInstance().getNameMauBinhStraight13();
-		case 6:
+		case MauBinhType.FOUR_OF_THREE:
 			return MauBinhConfig.getInstance().getNameMauBinhFourOfThree();
-		case 7:
+		case MauBinhType.SAME_COLOR_13:
 			return MauBinhConfig.getInstance().getNameMauBinhSameColor13();
 		}
 
