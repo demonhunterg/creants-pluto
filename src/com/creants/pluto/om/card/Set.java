@@ -81,6 +81,14 @@ public class Set {
 	}
 
 	/**
+	 * Phải thùng phá sảnh không
+	 * @return
+	 */
+	public boolean isStraightFlush() {
+		return type == SetType.STRAIGHT_FLUSH;
+	}
+
+	/**
 	 * Nếu là sảnh (5 con bài tăng dần) hoặc là thùng phá sảnh
 	 * 
 	 * @return

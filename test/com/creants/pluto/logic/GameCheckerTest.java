@@ -41,9 +41,11 @@ public class GameCheckerTest {
 		user1.setUserId(1);
 		user1.setUserName("usertest1");
 		players[0].setUser(user1);
-		List<Card> deliveryCard1 = deliveryCard(new int[] {16,26,30,3,6,10,15,50,19,21,24,28,33});
+		List<Card> deliveryCard1 = createCardList(new int[] {35,41,46,11,23,25,48,49,4,12,13,14,15});
+		deliveryCardForPlayer(players[0], deliveryCard1);
 		players[0].getCards().setCards(deliveryCard1);
 		setFinish(players[0], deliveryCard1);
+		
 		logCard(players[0].getCards().list());
 
 		User user2 = new User();
@@ -51,7 +53,8 @@ public class GameCheckerTest {
 		user2.setUserId(2);
 		user2.setUserName("bot1");
 		players[1].setUser(user2);
-		List<Card> deliveryCard2 = deliveryCard(new int[] { 35,42,49,1,2,5,11,18,4,12,20,40,44});
+		List<Card> deliveryCard2 = createCardList(new int[] { 26,34,47,1,5,20,37,38,16,17,19,28,29});
+		deliveryCardForPlayer(players[1], deliveryCard2);
 		players[1].getCards().setCards(deliveryCard2);
 		setFinish(players[1], deliveryCard2);
 		logCard(players[1].getCards().list());
@@ -73,8 +76,15 @@ public class GameCheckerTest {
 			}
 		}
 	}
+	
+	public static void deliveryCardForPlayer(Player player, List<Card> cards){
+		Cards cardObj = player.getCards();
+		for (Card card : cards) {
+			cardObj.receivedCard(card);
+		}
+	}
 
-	private static List<Card> deliveryCard(int[] cards) {
+	private static List<Card> createCardList(int[] cards) {
 		List<Card> result = new ArrayList<Card>(cards.length);
 		for (int i = 0; i < cards.length; i++) {
 			result.add(CardSet.getCard((byte) cards[i]));

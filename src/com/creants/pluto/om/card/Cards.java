@@ -310,22 +310,26 @@ public class Cards {
 	 */
 	private int getMauBinhWinChi() {
 		switch (getMauBinhType()) {
-		case 0:
+		case MauBinhType.SIX_PAIR:
 			return MauBinhConfig.getInstance().getChiMauBinhSixPair();
-		case 1:
+		case MauBinhType.THREE_STRAIGHT:
 			return MauBinhConfig.getInstance().getChiMauBinhThreeStraight();
-		case 2:
+		case MauBinhType.THREE_FLUSH:
 			return MauBinhConfig.getInstance().getChiMauBinhThreeFlush();
-		case 3:
+		case MauBinhType.SAME_COLOR_12:
 			return MauBinhConfig.getInstance().getChiMauBinhSameColor12();
-		case 4:
+		case MauBinhType.FIVE_PAIR_WITH_THREE:
 			return MauBinhConfig.getInstance().getChiMauBinhSixPairWithThree();
-		case 5:
+		case MauBinhType.STRAIGHT_13:
 			return MauBinhConfig.getInstance().getChiMauBinhStraight13();
-		case 6:
+		case MauBinhType.FOUR_OF_THREE:
 			return MauBinhConfig.getInstance().getChiMauBinhFourOfThree();
-		case 7:
+		case MauBinhType.SAME_COLOR_13:
 			return MauBinhConfig.getInstance().getChiMauBinhSameColor13();
+		case MauBinhType.FOUR_OF_KIND:
+			return MauBinhConfig.getInstance().getChiLastFourOfKind();
+		case MauBinhType.STRAIGHT_FLUSH:
+			return MauBinhConfig.getInstance().getChiLastStraightFlushA2345();
 		}
 
 		return Integer.MIN_VALUE;
@@ -423,16 +427,7 @@ public class Cards {
 	 */
 	private Result compareMauBinhWithMauBinh(Cards cards) {
 		Result result = new Result();
-
-		if (getMauBinhType() < cards.getMauBinhType()) {
-			result.setWinChiMauBinh(-cards.getMauBinhWinChi());
-		} else if (getMauBinhType() > cards.getMauBinhType()) {
-			result.setWinChiMauBinh(getMauBinhWinChi());
-		} else {
-			// TODO nếu huề thì ai làm chủ bàn sẽ win
-			result.setWinChiMauBinh(0);
-		}
-
+		result.setWinChiMauBinh(0);
 		return result;
 	}
 
@@ -440,6 +435,21 @@ public class Cards {
 		if (cards == null || cards.isEmpty() || cards.size() < 13) {
 			maubinhType = MauBinhType.NOT_MAU_BINH;
 			return;
+		}
+
+		// thực hiện set vào 3 chi
+		for (int i = 0; i < 3; i++) {
+			receivedCardTo1stSet(cards.get(i));
+		}
+
+		int beginset2 = 3;
+		for (int i = beginset2; i < 5 + beginset2; i++) {
+			receivedCardTo2ndSet(cards.get(i));
+		}
+
+		int beginset3 = 8;
+		for (int i = beginset3; i < 5 + beginset3; i++) {
+			receivedCardTo3rdSet(cards.get(i));
 		}
 
 		int redCardNo = 0;
@@ -492,6 +502,18 @@ public class Cards {
 		case 3:
 			fourNo++;
 			break;
+		}
+
+		// có tứ quý
+		if (fourNo >= 1) {
+			maubinhType = MauBinhType.FOUR_OF_KIND;
+			return;
+		}
+
+		// thùng phá sảnh
+		if (set03.isStraightFlush()) {
+			maubinhType = MauBinhType.STRAIGHT_FLUSH;
+			return;
 		}
 
 		// cùng màu đỏ, hoặc cùng màu đen

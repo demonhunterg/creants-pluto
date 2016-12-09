@@ -53,7 +53,6 @@ public abstract class AbstractGameLogic {
 	 * @return
 	 */
 	public IPlayMoveResult processRequest(short requestId, User user, Message message) {
-		System.out.println("process request message");
 		AbstractRequestHandler requestHandler = handlers.get(requestId);
 		if (requestHandler == null) {
 			return null;

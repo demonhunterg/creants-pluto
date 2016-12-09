@@ -60,7 +60,7 @@ public class MauBinhCardSet extends CardSet {
 		return card.getCardType() == TYPE_HEART || card.getCardType() == TYPE_DIAMOND;
 	}
 
-	public static List<Card> getMauBinhCards(int maubinhType) {
+	private static List<Card> getMauBinhCards(int maubinhType) {
 		Random random = new Random();
 		List<Card> cardList = new ArrayList<Card>();
 		byte id;
@@ -147,7 +147,7 @@ public class MauBinhCardSet extends CardSet {
 		return null;
 	}
 
-	public static List<Card> getBigStraightCards(int type) {
+	private static List<Card> getBigStraightCards(int type) {
 		List<Card> cardList = new ArrayList<Card>();
 		switch (type) {
 		case 1:

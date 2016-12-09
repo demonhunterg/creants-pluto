@@ -12,7 +12,7 @@ import org.apache.log4j.PropertyConfigurator;
  *
  */
 public class MauBinhConfig extends PropertyConfigurator {
-	public static final String CONFIG_FILE_NAME = "configs/maubinh.properties";
+	public static final String CONFIG_FILE_NAME = "configs/maubinh_vn.properties";
 	public static final int NUMBER_CARD_IN_SET = 52;
 	public static final int DEFAULT_NUMBER_CARD = 13;
 	public static final int DEFAULT_NUMBER_PLAYER = 4;

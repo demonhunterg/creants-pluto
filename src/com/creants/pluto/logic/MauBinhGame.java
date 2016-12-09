@@ -92,12 +92,14 @@ public class MauBinhGame {
 		if (!isPlaying())
 			return false;
 
+		CoreTracer.debug(MauBinhGame.class, "User reconnect: " + user.getUserName());
+
 		User disconnectUser = disconnectedUsers.get(user.getCreantUserId());
 		user.setUserId(disconnectUser.getUserId());
 		user.setLastJoinedRoom(room);
-		CoreTracer.debug(MauBinhGame.class, "User reconnect: " + user.getUserName());
 		Player playerByUser = getPlayerByUser(disconnectUser);
 		playerByUser.setUser(user);
+		
 		// báo cho player khác user
 		Message message = MessageFactory.createMauBinhMessage(GameCommand.ACTION_RECONNECT);
 		message.putInt(SystemNetworkConstant.KEYI_USER_ID, user.getCreantUserId());
@@ -217,7 +219,7 @@ public class MauBinhGame {
 		try {
 			debug(String.format("[DEBUG] Game is begin [roomId: %d, roomName: %s, owner: %s]", room.getId(),
 					room.getName(), room.getOwner().getUserName()));
-			// TODO kiểm tra trong danh sách disconnect để đá user này ra
+
 			if (playerSize() < 2) {
 				debug("[DEBUG] Game is begin with a player");
 				return;
@@ -492,7 +494,6 @@ public class MauBinhGame {
 	private void processGameFinish() {
 		gameState = STATE.CALCULATE;
 		stopCountDown();
-		debug("[DEBUG] processGameFinish........................!");
 		Result[][] result = GameChecker.comparePlayers(players);
 		int[] winChi = GameChecker.getWinChi(players, result);
 		long[] winMoney = moneyManager.calculateMoney(winChi);

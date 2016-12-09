@@ -38,4 +38,10 @@ public class MauBinhType {
 	// Đồng màu 1: 13 con cùng màu ()
 	public static final byte SAME_COLOR_13 = 7;
 
+	// tứ quý
+	public static final byte FOUR_OF_KIND = 8;
+
+	// Thùng phá sảnh, dẫy đồng chất Straight Flush
+	public static final byte STRAIGHT_FLUSH = 9;
+
 }
